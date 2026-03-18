@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multivibratori – Vizuelno Objašnjenje</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg: #080c14;
+  --bg2: #0d1421;
+  --bg3: #111827;
+  --border: #1e2d45;
+  --green: #00e5a0;
+  --blue: #3b9eff;
+  --yellow: #ffb800;
+  --red: #ff4757;
+  --purple: #b87cff;
+  --text: #c8d6e8;
+  --muted: #4a607a;
+  --mono: 'Space Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated background grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+/* Header */
+.hero {
+  text-align: center;
+  padding: 40px 20px 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+.hero h1 {
+  font-family: var(--mono);
+  font-size: clamp(22px, 4vw, 36px);
+  color: #fff;
+  letter-spacing: -1px;
+  margin-bottom: 8px;
+}
+.hero h1 span { color: var(--green); }
+.hero p { font-size: 14px; color: var(--muted); max-width: 600px; margin: 0 auto; }
+
+/* Tab nav */
+.tab-nav {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  margin-bottom: 24px;
+}
+.tab-btn {
+  flex: 1; min-width: 120px;
+  padding: 10px 14px;
+  border: none; cursor: pointer;
+  border-radius: 8px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); background: var(--bg3); }
+.tab-btn.active { background: var(--border); color: #fff; }
+.tab-btn.ast { border-left: 3px solid var(--green); }
+.tab-btn.mono { border-left: 3px solid var(--yellow); }
+.tab-btn.cmp { border-left: 3px solid var(--blue); }
+
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* Grid layout */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:700px){ .grid2 { grid-template-columns: 1fr; } }
+
+/* Cards */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.card-title span { color: var(--green); }
+.card-title.yellow span { color: var(--yellow); }
+.card-title.blue span { color: var(--blue); }
+
+/* SVG schematics */
+.schematic-wrap {
+  background: #050810;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  overflow: hidden;
+}
+.schematic-wrap svg { width: 100%; height: auto; display: block; }
+
+/* Waveform canvas */
+.wave-wrap {
+  background: #050810;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.wave-wrap canvas { display: block; width: 100%; }
+
+/* Info list */
+.info-list { list-style: none; padding: 0; }
+.info-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px; line-height: 1.5;
+}
+.info-list li:last-child { border-bottom: none; }
+.badge {
+  display: inline-block; min-width: 60px;
+  padding: 2px 8px; border-radius: 20px;
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  text-align: center; flex-shrink: 0;
+}
+.badge-g { background: #00291a; color: var(--green); border: 1px solid var(--green); }
+.badge-y { background: #2a1d00; color: var(--yellow); border: 1px solid var(--yellow); }
+.badge-b { background: #00183a; color: var(--blue); border: 1px solid var(--blue); }
+.badge-p { background: #1a0d2e; color: var(--purple); border: 1px solid var(--purple); }
+.badge-r { background: #2a0009; color: var(--red); border: 1px solid var(--red); }
+
+/* Formula display */
+.formula {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--purple);
+  background: #0a0617;
+  border: 1px solid #2a1d45;
+  border-radius: 6px;
+  padding: 8px 14px;
+  margin: 6px 0;
+}
+
+/* State display */
+.state-row { display: flex; gap: 12px; margin-bottom: 16px; }
+.state-box {
+  flex: 1; padding: 12px; border-radius: 10px;
+  text-align: center;
+  border: 2px solid;
+  transition: all 0.4s;
+}
+.state-box .sb-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-family: var(--mono); }
+.state-box .sb-val { font-size: 16px; font-weight: 700; font-family: var(--mono); }
+.sb-on { border-color: var(--green); background: #001a10; }
+.sb-on .sb-label { color: var(--green); }
+.sb-on .sb-val { color: var(--green); }
+.sb-off { border-color: var(--red); background: #1a0006; }
+.sb-off .sb-label { color: var(--red); }
+.sb-off .sb-val { color: var(--red); }
+.sb-mid { border-color: var(--blue); background: #001228; }
+.sb-mid .sb-label { color: var(--blue); }
+.sb-mid .sb-val { color: var(--blue); font-size: 12px; }
+
+/* Controls */
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.btn {
+  padding: 8px 18px; border: none; border-radius: 8px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-g { background: var(--green); color: #000; }
+.btn-g:hover { opacity: 0.85; transform: translateY(-1px); }
+.btn-y { background: var(--yellow); color: #000; }
+.btn-y:hover { opacity: 0.85; }
+.btn-b { background: var(--blue); color: #000; }
+.btn-b:hover { opacity: 0.85; }
+.btn-muted { background: var(--border); color: var(--text); }
+.btn-muted:hover { background: #2a3a5c; }
+
+.explain-box {
+  background: var(--bg3);
+  border-left: 3px solid var(--yellow);
+  border-radius: 0 8px 8px 0;
+  padding: 14px 16px;
+  font-size: 13px; line-height: 1.6;
+  color: var(--text);
+  margin-top: 12px;
+}
+.explain-box strong { color: var(--yellow); }
+
+/* Sprega diagram */
+.sprega-diagram {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; flex-wrap: wrap; padding: 16px 0;
+}
+.sprega-box {
+  background: var(--bg3);
+  border: 2px solid;
+  border-radius: 10px;
+  padding: 12px 20px;
+  text-align: center;
+  min-width: 90px;
+}
+.sprega-box .sb-name { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.sprega-box .sb-desc { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.sprega-arrow {
+  font-size: 20px; padding: 0 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.sprega-arrow .arr-label { font-size: 9px; font-family: var(--mono); }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th {
+  background: var(--bg3); color: var(--blue);
+  padding: 10px 12px; text-align: left;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border);
+}
+td { padding: 10px 12px; border-bottom: 1px solid var(--bg3); color: var(--text); }
+tr:hover td { background: #0d1421; }
+td:first-child { color: var(--muted); font-size: 12px; }
+
+/* Slider row */
+.slider-row {
+  display: flex; align-items: center; gap: 10px; margin: 8px 0;
+  font-size: 12px;
+}
+.slider-row label { color: var(--muted); width: 90px; flex-shrink: 0; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--blue); }
+.slider-row .val { font-family: var(--mono); color: var(--blue); width: 40px; text-align: right; }
+
+.tab-btn.reg { border-left: 3px solid var(--purple); }
+  border: none; border-top: 1px solid var(--border);
+  margin: 24px 0;
+}
+
+.pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+.pill {
+  padding: 4px 12px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; font-family: var(--mono);
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hero">
+  <h1>🔌 <span>Multivibratori</span> — Vizuelno</h1>
+  <p>Interaktivno objašnjenje astabilnog i monostabilnog multivibratora s animiranim shemama i signalima</p>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn ast active" onclick="showPanel('uvod',this)">📖 Uvod</button>
+  <button class="tab-btn ast" onclick="showPanel('ast-shema',this)">⚡ Astabil – Shema</button>
+  <button class="tab-btn ast" onclick="showPanel('ast-rad',this)">🔄 Astabil – Rad & Signal</button>
+  <button class="tab-btn mono" onclick="showPanel('mono-shema',this)">🎯 Monostabil – Shema</button>
+  <button class="tab-btn mono" onclick="showPanel('mono-rad',this)">⏱ Monostabil – Rad & Signal</button>
+  <button class="tab-btn cmp" onclick="showPanel('usporedba',this)">⚖ Usporedba</button>
+  <button class="tab-btn reg" onclick="showPanel('registri',this)">💾 Registri & Brojači</button>
+</div>
+
+<!-- ===================== UVOD ===================== -->
+<div id="uvod" class="panel active">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Šta je multivibrator?</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:12px">
+          Multivibrator je elektronski sklop koji koristi <strong style="color:var(--blue)">povratnu spregu</strong> između dva tranzistora da bi prelazio između dva stanja.
+          Svaki tranzistor radi kao <strong style="color:var(--green)">elektronski prekidač</strong> — ili je potpuno
+          <span style="color:var(--green)">uključen (zasićenje)</span> ili potpuno
+          <span style="color:var(--red)">isključen (zakočenje)</span>.
+        </p>
+        <ul class="info-list">
+          <li><span class="badge badge-g">Astabil</span> 0 stabilnih stanja — sam beskrajno osciluje</li>
+          <li><span class="badge badge-y">Monostabil</span> 1 stabilno + 1 kvazistabilno stanje</li>
+          <li><span class="badge badge-b">Bistabil</span> 2 stabilna stanja — flip-flop, treba 2 okidača</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>//</span> Stanja tranzistora</div>
+        <div style="display:flex;gap:12px;">
+          <div style="flex:1;background:#001a10;border:2px solid var(--green);border-radius:10px;padding:14px;text-align:center;">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--green);margin-bottom:6px">ZASIĆENJE</div>
+            <div style="font-size:22px;margin-bottom:6px">✓</div>
+            <div style="font-size:11px;color:var(--muted)">UCE ≈ 0.3V<br>Kao zatvoreni prekidač<br>Struja prolazi</div>
+          </div>
+          <div style="flex:1;background:#1a0006;border:2px solid var(--red);border-radius:10px;padding:14px;text-align:center;">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:6px">ZAKOČENJE</div>
+            <div style="font-size:22px;margin-bottom:6px">✗</div>
+            <div style="font-size:11px;color:var(--muted)">UCE ≈ UCC<br>Kao otvoreni prekidač<br>Struja ne prolazi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Povratna sprega — ključni pojam</div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px">🔴 POZITIVNA povratna sprega (via kondenzator)</div>
+          <div class="sprega-diagram">
+            <div class="sprega-box" style="border-color:var(--red)">
+              <div class="sb-name" style="color:var(--red)">Promjena</div>
+              <div class="sb-desc">na ulazu</div>
+            </div>
+            <div class="sprega-arrow">
+              <span style="color:var(--red)">→</span>
+              <span class="arr-label" style="color:var(--red)">pojačava</span>
+            </div>
+            <div class="sprega-box" style="border-color:var(--red)">
+              <div class="sb-name" style="color:var(--red)">Pojačana</div>
+              <div class="sb-desc">promjena</div>
+            </div>
+            <div class="sprega-arrow">
+              <span style="color:var(--red)">→</span>
+              <span class="arr-label" style="color:var(--red)">lavina!</span>
+            </div>
+            <div class="sprega-box" style="border-color:var(--red)">
+              <div class="sb-name" style="color:var(--red)">Krajnje</div>
+              <div class="sb-desc">stanje</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--muted)">Kondenzator propušta brze promjene napona → odmah prenosi signal → KVAZISTABILNO stanje</p>
+        </div>
+
+        <hr class="section-sep">
+
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px">🟢 NEGATIVNA povratna sprega (via otpornik)</div>
+          <div class="sprega-diagram">
+            <div class="sprega-box" style="border-color:var(--green)">
+              <div class="sb-name" style="color:var(--green)">Promjena</div>
+              <div class="sb-desc">na ulazu</div>
+            </div>
+            <div class="sprega-arrow">
+              <span style="color:var(--green)">→</span>
+              <span class="arr-label" style="color:var(--green)">suprotstavlja</span>
+            </div>
+            <div class="sprega-box" style="border-color:var(--green)">
+              <div class="sb-name" style="color:var(--green)">Vraća se</div>
+              <div class="sb-desc">u ravnotežu</div>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--muted)">Otpornici definišu stalni napon → drže sistem u istom stanju → STABILNO stanje</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ASTABIL SHEMA ===================== -->
+<div id="ast-shema" class="panel">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Shema astabilnog multivibratora</div>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 340 260" xmlns="http://www.w3.org/2000/svg">
+            <!-- UCC rail -->
+            <line x1="10" y1="25" x2="330" y2="25" stroke="#ff4757" stroke-width="2"/>
+            <text x="165" y="18" fill="#ff4757" font-size="11" font-weight="bold" text-anchor="middle">+ UCC</text>
+            <!-- GND rail -->
+            <line x1="10" y1="235" x2="330" y2="235" stroke="#4a607a" stroke-width="1.5"/>
+            <text x="165" y="250" fill="#4a607a" font-size="10" text-anchor="middle">GND (masa)</text>
+
+            <!-- RC1 -->
+            <line x1="80" y1="25" x2="80" y2="48" stroke="#c8d6e8" stroke-width="1.5"/>
+            <rect x="68" y="48" width="24" height="32" rx="3" fill="#111827" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="80" y="68" fill="#3b9eff" font-size="9" text-anchor="middle">RC1</text>
+            <line x1="80" y1="80" x2="80" y2="105" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- RC2 -->
+            <line x1="260" y1="25" x2="260" y2="48" stroke="#c8d6e8" stroke-width="1.5"/>
+            <rect x="248" y="48" width="24" height="32" rx="3" fill="#111827" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="260" y="68" fill="#3b9eff" font-size="9" text-anchor="middle">RC2</text>
+            <line x1="260" y1="80" x2="260" y2="105" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- TR1 -->
+            <circle cx="80" cy="125" r="20" fill="#080c14" stroke="#00e5a0" stroke-width="2"/>
+            <text x="80" y="122" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">TR1</text>
+            <text x="80" y="134" fill="#4a607a" font-size="7" text-anchor="middle">NPN</text>
+            <line x1="80" y1="145" x2="80" y2="235" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- TR2 -->
+            <circle cx="260" cy="125" r="20" fill="#080c14" stroke="#00e5a0" stroke-width="2"/>
+            <text x="260" y="122" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">TR2</text>
+            <text x="260" y="134" fill="#4a607a" font-size="7" text-anchor="middle">NPN</text>
+            <line x1="260" y1="145" x2="260" y2="235" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- RB2 (left side, UCC → base TR1) -->
+            <line x1="35" y1="25" x2="35" y2="85" stroke="#c8d6e8" stroke-width="1.5"/>
+            <rect x="23" y="85" width="24" height="28" rx="3" fill="#111827" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="35" y="103" fill="#ffb800" font-size="9" text-anchor="middle">RB1</text>
+            <line x1="35" y1="113" x2="35" y2="125" stroke="#c8d6e8" stroke-width="1.5"/>
+            <line x1="35" y1="125" x2="60" y2="125" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- RB1 (right side, UCC → base TR2) -->
+            <line x1="305" y1="25" x2="305" y2="85" stroke="#c8d6e8" stroke-width="1.5"/>
+            <rect x="293" y="85" width="24" height="28" rx="3" fill="#111827" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="305" y="103" fill="#ffb800" font-size="9" text-anchor="middle">RB2</text>
+            <line x1="305" y1="113" x2="305" y2="125" stroke="#c8d6e8" stroke-width="1.5"/>
+            <line x1="305" y1="125" x2="280" y2="125" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- C2: Kol TR1 → base TR2 -->
+            <line x1="80" y1="105" x2="138" y2="105" stroke="#b87cff" stroke-width="2"/>
+            <rect x="138" y="94" width="7" height="22" rx="1" fill="#111827" stroke="#b87cff" stroke-width="2"/>
+            <rect x="148" y="94" width="7" height="22" rx="1" fill="#111827" stroke="#b87cff" stroke-width="2"/>
+            <text x="148" y="88" fill="#b87cff" font-size="9" font-weight="bold" text-anchor="middle">C2</text>
+            <line x1="155" y1="105" x2="170" y2="105" stroke="#b87cff" stroke-width="2"/>
+            <line x1="170" y1="105" x2="170" y2="125" stroke="#b87cff" stroke-width="2"/>
+            <line x1="170" y1="125" x2="240" y2="125" stroke="#b87cff" stroke-width="2"/>
+
+            <!-- C1: Kol TR2 → base TR1 -->
+            <line x1="260" y1="105" x2="202" y2="105" stroke="#00e5a0" stroke-width="2"/>
+            <rect x="188" y="94" width="7" height="22" rx="1" fill="#111827" stroke="#00e5a0" stroke-width="2"/>
+            <rect x="198" y="94" width="7" height="22" rx="1" fill="#111827" stroke="#00e5a0" stroke-width="2"/>
+            <text x="193" y="88" fill="#00e5a0" font-size="9" font-weight="bold" text-anchor="middle">C1</text>
+            <line x1="188" y1="105" x2="155" y2="105" stroke="#00e5a0" stroke-width="2"/>
+            <line x1="155" y1="105" x2="130" y2="105" stroke="#00e5a0" stroke-width="2"/>
+            <line x1="130" y1="105" x2="100" y2="125" stroke="#00e5a0" stroke-width="2"/>
+
+            <!-- Kolektor tačke -->
+            <circle cx="80" cy="105" r="4" fill="#ff4757"/>
+            <circle cx="260" cy="105" r="4" fill="#ff4757"/>
+            <text x="90" y="101" fill="#ff4757" font-size="8">Kol1</text>
+            <text x="230" y="101" fill="#ff4757" font-size="8">Kol2</text>
+
+            <!-- Arrow labels -->
+            <text x="170" y="200" fill="#b87cff" font-size="10" font-weight="bold" text-anchor="middle">↔ UKRŠTENA POZITIVNA SPREGA ↔</text>
+            <text x="170" y="215" fill="#4a607a" font-size="9" text-anchor="middle">Oba smjera — via kondenzatori</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Komponente i uloge</div>
+        <ul class="info-list">
+          <li><span class="badge badge-b">RC1 RC2</span> Kolektorski otpornici — ograničavaju kolektorsku struju, red veličine kΩ</li>
+          <li><span class="badge badge-y">RB1 RB2</span> Bazni otpornici — kroz njih se prazne kondenzatori, red veličine 10·kΩ → određuju trajanje kvazistabilnih stanja!</li>
+          <li><span class="badge badge-p">C1 C2</span> Kondenzatori — propuštaju brze promjene → pozitivna sprega → srce osciliranja</li>
+          <li><span class="badge badge-g">TR1 TR2</span> NPN bipolni tranzistori — rade kao elektronski prekidači (zasićenje/zakočenje)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Zašto je sprega POZITIVNA?</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:12px">
+          Kondenzator <strong style="color:var(--purple)">propušta samo brze promjene napona</strong>.
+          Kad napon na kolektoru TR1 naglo padne — ta promjena se ODMAH prenosi na bazu TR2.
+        </p>
+        <div style="background:#0a0617;border:1px solid #2a1d45;border-radius:8px;padding:12px;font-size:12px;line-height:1.8">
+          TR1 počne voditi više<br>
+          <span style="color:var(--muted)">→</span> Kolektor TR1 pada<br>
+          <span style="color:var(--muted)">→</span> C2 prenosi pad na bazu TR2<br>
+          <span style="color:var(--muted)">→</span> TR2 se isključuje<br>
+          <span style="color:var(--muted)">→</span> Kolektor TR2 raste<br>
+          <span style="color:var(--muted)">→</span> C1 prenosi rast na bazu TR1<br>
+          <span style="color:var(--red)">→ TR1 se još više uključuje → LAVINA!</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Dvije brzine promjene</div>
+        <ul class="info-list">
+          <li><span class="badge badge-b">RC·C</span> Brza promjena — kondenzator se PUNI kroz mali kolektorski otpornik (kΩ) → strme ivice impulsa</li>
+          <li><span class="badge badge-y">RB·C</span> Spora promjena — kondenzator se PRAZNI kroz veliki bazni otpornik (10·kΩ) → određuje trajanje stanja</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ASTABIL RAD ===================== -->
+<div id="ast-rad" class="panel">
+
+  <div class="state-row" id="astStateRow">
+    <div class="state-box sb-on" id="astB1">
+      <div class="sb-label">TR1</div>
+      <div class="sb-val" id="astV1">ZASIĆEN ✓</div>
+    </div>
+    <div class="state-box sb-mid">
+      <div class="sb-label">Stanje</div>
+      <div class="sb-val" id="astPhase">I Kvazistabilno</div>
+    </div>
+    <div class="state-box sb-off" id="astB2">
+      <div class="sb-label">TR2</div>
+      <div class="sb-val" id="astV2">ZAKOČEN ✗</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-g" onclick="toggleAst()">▶ Start / Stop</button>
+    <button class="btn btn-muted" onclick="resetAst()">↺ Reset</button>
+    <span style="font-size:12px;color:var(--muted)">Brzina:</span>
+    <input type="range" min="0.5" max="4" step="0.5" value="1" style="width:80px;accent-color:var(--green)" oninput="astSpd=+this.value">
+  </div>
+
+  <div class="wave-wrap" style="margin-bottom:16px">
+    <canvas id="astCanvas" width="900" height="260"></canvas>
+  </div>
+
+  <div class="explain-box" id="astExplain">
+    <strong>I Kvazistabilno stanje:</strong> TR1 zasičen, TR2 zakočen. C2 se prazni kroz RB2 s vremenskom konstantom τ = RB2·C2. Napon na bazi TR2 raste prema pragu Uγ...
+  </div>
+
+  <hr class="section-sep">
+
+  <div class="grid2" style="margin-top:0">
+    <div class="card">
+      <div class="card-title"><span>//</span> Struje u I kvazistabilnom stanju</div>
+      <ul class="info-list">
+        <li><span class="badge badge-g">IBzas1</span> UCC → RB1 → Baza TR1 → Masa<br><span style="color:var(--muted);font-size:11px">= (UCC − UBEzas1) / RB1</span></li>
+        <li><span class="badge badge-b">ICzas1</span> UCC → RC1 → TR1 → Masa<br><span style="color:var(--muted);font-size:11px">= (UCC − UCEzas1) / RC1</span></li>
+        <li><span class="badge badge-p">Iprazn</span> UCC → RB2 → C2 (prazni) → TR1 → Masa<br><span style="color:var(--red);font-size:11px">τ1 = RB2 · C2 ← određuje T1!</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title yellow"><span>//</span> Formule za period</div>
+      <div class="formula">T₁ ≈ 0.693 · RB2 · C2</div>
+      <div class="formula">T₂ ≈ 0.693 · RB1 · C1</div>
+      <div class="formula">T = T₁ + T₂</div>
+      <div class="formula">f = 1 / T</div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px">
+        0.693 = ln(2) → dolazi iz eksponencijalne jednačine punjenja kondenzatora.<br>
+        Ako RB1·C1 = RB2·C2 → simetričan signal, duty cycle 50%.
+      </p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:4px">
+    <div class="card-title"><span>//</span> Podešavanje vremenskih konstanti</div>
+    <div class="slider-row">
+      <label>RB2·C2 (T1):</label>
+      <input type="range" min="20" max="150" value="70" id="slT1" oninput="slT1v=+this.value;document.getElementById('dT1').textContent=this.value;drawStaticAst()">
+      <span class="val" id="dT1">70</span>
+    </div>
+    <div class="slider-row">
+      <label>RB1·C1 (T2):</label>
+      <input type="range" min="20" max="150" value="100" id="slT2" oninput="slT2v=+this.value;document.getElementById('dT2').textContent=this.value;drawStaticAst()">
+      <span class="val" id="dT2">100</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">Promijeni klizače da vidiš kako se mijenja oblik signala ↑</p>
+  </div>
+</div>
+
+<!-- ===================== MONO SHEMA ===================== -->
+<div id="mono-shema" class="panel">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Shema monostabilnog multivibratora</div>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 340 270" xmlns="http://www.w3.org/2000/svg">
+            <!-- UCC -->
+            <line x1="10" y1="25" x2="330" y2="25" stroke="#ff4757" stroke-width="2"/>
+            <text x="165" y="17" fill="#ff4757" font-size="11" font-weight="bold" text-anchor="middle">+ UCC</text>
+            <!-- GND -->
+            <line x1="10" y1="235" x2="330" y2="235" stroke="#4a607a" stroke-width="1.5"/>
+
+            <!-- RC1 -->
+            <line x1="90" y1="25" x2="90" y2="48" stroke="#c8d6e8" stroke-width="1.5"/>
+            <rect x="78" y="48" width="24" height="32" rx="3" fill="#111827" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="90" y="68" fill="#3b9eff" font-size="9" text-anchor="middle">RC1</text>
+            <line x1="90" y1="80" x2="90" y2="100" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- RC2 -->
+            <line x1="265" y1="25" x2="265" y2="48" stroke="#c8d6e8" stroke-width="1.5"/>
+            <rect x="253" y="48" width="24" height="32" rx="3" fill="#111827" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="265" y="68" fill="#3b9eff" font-size="9" text-anchor="middle">RC2</text>
+            <line x1="265" y1="80" x2="265" y2="100" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- TR1 -->
+            <circle cx="90" cy="120" r="20" fill="#080c14" stroke="#00e5a0" stroke-width="2"/>
+            <text x="90" y="117" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">TR1</text>
+            <text x="90" y="129" fill="#4a607a" font-size="7" text-anchor="middle">NPN</text>
+            <line x1="90" y1="140" x2="90" y2="235" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- TR2 -->
+            <circle cx="265" cy="120" r="20" fill="#080c14" stroke="#00e5a0" stroke-width="2"/>
+            <text x="265" y="117" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">TR2</text>
+            <text x="265" y="129" fill="#4a607a" font-size="7" text-anchor="middle">NPN</text>
+            <line x1="265" y1="140" x2="265" y2="235" stroke="#c8d6e8" stroke-width="1.5"/>
+
+            <!-- RB — from UCC to base TR1 (STABILNO!) -->
+            <line x1="40" y1="25" x2="40" y2="82" stroke="#00e5a0" stroke-width="2.5"/>
+            <rect x="28" y="82" width="24" height="28" rx="3" fill="#001a10" stroke="#00e5a0" stroke-width="2.5"/>
+            <text x="40" y="100" fill="#00e5a0" font-size="9" text-anchor="middle">RB</text>
+            <line x1="40" y1="110" x2="40" y2="120" stroke="#00e5a0" stroke-width="2.5"/>
+            <line x1="40" y1="120" x2="70" y2="120" stroke="#00e5a0" stroke-width="2.5"/>
+            <text x="10" y="75" fill="#00e5a0" font-size="7">STABILNO</text>
+
+            <!-- CB: Kol TR2 → Base TR1 (POZITIVNA SPREGA!) -->
+            <line x1="265" y1="100" x2="210" y2="100" stroke="#ff4757" stroke-width="2"/>
+            <rect x="195" y="89" width="7" height="22" rx="1" fill="#111827" stroke="#b87cff" stroke-width="2"/>
+            <rect x="205" y="89" width="7" height="22" rx="1" fill="#111827" stroke="#b87cff" stroke-width="2"/>
+            <text x="200" y="83" fill="#ff4757" font-size="9" font-weight="bold" text-anchor="middle">CB</text>
+            <line x1="195" y1="100" x2="90" y2="100" stroke="#ff4757" stroke-width="2"/>
+            <text x="155" y="93" fill="#ff4757" font-size="8" text-anchor="middle">← POZITIVNA SPREGA</text>
+
+            <!-- R1–R2 divider: Kol TR1 → Base TR2 (NEGATIVNA SPREGA!) -->
+            <line x1="90" y1="100" x2="120" y2="100" stroke="#4a607a" stroke-width="1.5"/>
+            <rect x="120" y="89" width="22" height="22" rx="3" fill="#111827" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="131" y="104" fill="#00e5a0" font-size="9" text-anchor="middle">R1</text>
+            <line x1="142" y1="100" x2="162" y2="100" stroke="#4a607a" stroke-width="1.5"/>
+            <rect x="162" y="89" width="22" height="22" rx="3" fill="#111827" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="173" y="104" fill="#00e5a0" font-size="9" text-anchor="middle">R2</text>
+            <line x1="184" y1="100" x2="245" y2="120" stroke="#00e5a0" stroke-width="1.5"/>
+            <!-- R2 to GND -->
+            <line x1="173" y1="111" x2="173" y2="235" stroke="#00e5a0" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="130" y="135" fill="#00e5a0" font-size="7" text-anchor="middle">NEGATIVNA SPREGA</text>
+
+            <!-- Ulazni impuls -->
+            <text x="30" y="180" fill="#ffb800" font-size="8">Uin→</text>
+            <line x1="43" y1="175" x2="60" y2="175" stroke="#ffb800" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <line x1="60" y1="175" x2="68" y2="120" stroke="#ffb800" stroke-width="1" stroke-dasharray="2,2"/>
+            <circle cx="70" cy="120" r="3" fill="#ffb800"/>
+            <text x="20" y="192" fill="#ffb800" font-size="7">neg. impuls</text>
+
+            <!-- Kolektor tačke -->
+            <circle cx="90" cy="100" r="4" fill="#ff4757"/>
+            <circle cx="265" cy="100" r="4" fill="#ff4757"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="border-color:var(--red)">
+        <div class="card-title"><span>//</span> 🔴 Pozitivna sprega — via CB</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:8px">
+          Kolektor TR2 → <strong style="color:var(--purple)">CB</strong> → Baza TR1
+        </p>
+        <p style="font-size:12px;color:var(--muted)">Kondenzator propušta brze promjene → stvara <strong style="color:var(--red)">KVAZISTABILNO</strong> stanje</p>
+      </div>
+      <div class="card" style="border-color:var(--green)">
+        <div class="card-title"><span>//</span> 🟢 Negativna sprega — via R1-R2</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:8px">
+          Kolektor TR1 → <strong style="color:var(--green)">R1 → R2</strong> → Baza TR2
+        </p>
+        <p style="font-size:12px;color:var(--muted)">Otpornici definišu stalni napon → drže TR2 u zakočenju → <strong style="color:var(--green)">STABILNO</strong> stanje</p>
+      </div>
+      <div class="card" style="border-color:var(--yellow)">
+        <div class="card-title yellow"><span>//</span> ⚡ Ključna razlika vs Astabil</div>
+        <ul class="info-list">
+          <li><span class="badge badge-r">Astabil</span> Samo pozitivna sprega u OBA smjera → nema stabilnog stanja</li>
+          <li><span class="badge badge-y">Monostabil</span> Pozitivna u jednom (CB) + negativna u drugom (R1-R2) → jedno stabilno!</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Zašto RB vezan na UCC?</div>
+        <p style="font-size:13px;line-height:1.7">
+          Da odmah po uključenju napajanja TR1 ide u zasićenje i znamo početno stanje sklopa.
+          UCEzas1 ≈ 0.3V → ne može otvoriti TR2 (treba 0.7V) → TR2 ostaje zakočen.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MONO RAD ===================== -->
+<div id="mono-rad" class="panel">
+
+  <div class="state-row">
+    <div class="state-box sb-on" id="moB1">
+      <div class="sb-label">TR1</div>
+      <div class="sb-val" id="moV1">ZASIĆEN ✓</div>
+    </div>
+    <div class="state-box sb-mid" id="moPhB">
+      <div class="sb-label">Stanje</div>
+      <div class="sb-val" id="moPh">STABILNO</div>
+    </div>
+    <div class="state-box sb-off" id="moB2">
+      <div class="sb-label">TR2</div>
+      <div class="sb-val" id="moV2">ZAKOČEN ✗</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-y" onclick="triggerMono()">⚡ Pošalji negativni impuls</button>
+    <button class="btn btn-muted" onclick="resetMono()">↺ Reset</button>
+  </div>
+
+  <div class="wave-wrap" style="margin-bottom:16px">
+    <canvas id="monoCanvas" width="900" height="300"></canvas>
+  </div>
+
+  <div class="explain-box" id="moExplain">
+    <strong>STABILNO STANJE:</strong> TR1 zasičen (RB na UCC), TR2 zakočen (R1-R2 negativna sprega). CB napunjen na (UCC − UBEzas). Kolo miruje beskonačno dok ne stigne impuls.
+  </div>
+
+  <hr class="section-sep">
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span>//</span> Struje u stabilnom stanju</div>
+      <ul class="info-list">
+        <li><span class="badge badge-g">IBzas1</span> UCC → RB → Baza TR1 → Masa<br><span style="color:var(--muted);font-size:11px">= (UCC − UBEzas1) / RB · stalna struja</span></li>
+        <li><span class="badge badge-b">ICzas1</span> UCC → RC1 → TR1 → Masa</li>
+        <li><span class="badge badge-p">ICB</span> UCC → RC2 → CB → Baza TR1 → Masa<br><span style="color:var(--yellow);font-size:11px">Teče SAMO dok se CB ne napuni!</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>//</span> Struje u kvazistabilnom stanju</div>
+      <ul class="info-list">
+        <li><span class="badge badge-g">IBzas2</span> UCC → RC1 → R1 → R2 → Baza TR2<br><span style="color:var(--muted);font-size:11px">TR2 zasičen, TR1 zakočen</span></li>
+        <li><span class="badge badge-p">Iprazn</span> UCC → RB → CB (prazni) → TR2 → Masa<br><span style="color:var(--red);font-size:11px">τ = RB · CB → određuje trajanje T!</span></li>
+      </ul>
+      <div class="formula" style="margin-top:12px">T = 0.693 · RB · CB</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>//</span> Zašto UCE1 raste BRZO, a UBE1 raste SPORO?</div>
+    <div class="grid2">
+      <div>
+        <p style="font-size:13px;color:var(--blue);font-weight:600;margin-bottom:6px">UCE1 — skoro trenutni skok</p>
+        <p style="font-size:12px;line-height:1.6;color:var(--muted)">U kolektorskom kolu TR1 nema kondenzatora — samo otpornici (RC1, R1, R2). Bez kondenzatora nema RC vremenske konstante → nema eksponencijalnog oblika → brz skok!</p>
+      </div>
+      <div>
+        <p style="font-size:13px;color:var(--purple);font-weight:600;margin-bottom:6px">UBE1 — sporo eksponencijalno</p>
+        <p style="font-size:12px;line-height:1.6;color:var(--muted)">CB se prazni kroz RB. RB je velik (10·kΩ) → mala struja → sporo pražnjenje → eksponencijalni rast napona na bazi TR1. Kad UBE1 dostigne Uγ → TR1 provodi → povratak u stabilno!</p>
+      </div>
+    </div>
+    <div style="background:#0a0617;border:1px solid #2a1d45;border-radius:8px;padding:12px;margin-top:12px;font-size:12px;line-height:1.8">
+      <strong style="color:var(--yellow)">UBE2 — nema eksponencijale!</strong><br>
+      <span style="color:var(--muted)">U kolu koje određuje potencijal baze TR2 (djelitelj R1-R2) nema kondenzatora → samo otpornici → nema RC konstante → promjena napona je skoro trenutna.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== USPOREDBA ===================== -->
+<div id="usporedba" class="panel">
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title blue"><span>//</span> Usporedba — Astabil vs Monostabil</div>
+    <div style="overflow-x:auto">
+      <table>
+        <tr>
+          <th>Karakteristika</th>
+          <th style="color:var(--green)">⚡ Astabilni</th>
+          <th style="color:var(--yellow)">🎯 Monostabilni</th>
+        </tr>
+        <tr><td>Stabilnih stanja</td><td><span class="badge badge-r">0</span></td><td><span class="badge badge-g">1</span></td></tr>
+        <tr><td>Kvazistabilnih stanja</td><td><span class="badge badge-y">2</span></td><td><span class="badge badge-y">1</span></td></tr>
+        <tr><td>Treba okidač?</td><td style="color:var(--green)">Ne — sam osciluje</td><td style="color:var(--yellow)">Da — negativni impuls na bazu TR1</td></tr>
+        <tr><td>Povratna sprega</td><td>Samo pozitivna<br><small style="color:var(--muted)">(C1 i C2 u oba smjera)</small></td><td>Pozitivna (CB) + Negativna (R1-R2)</td></tr>
+        <tr><td>Trajanje stanja određuje</td><td style="font-family:var(--mono);font-size:11px">τ1 = RB2·C2<br>τ2 = RB1·C1</td><td style="font-family:var(--mono);font-size:11px">τ = RB·CB</td></tr>
+        <tr><td>Formula trajanja</td><td style="font-family:var(--mono);font-size:11px">T1 = 0.693·RB2·C2<br>T2 = 0.693·RB1·C1</td><td style="font-family:var(--mono);font-size:11px">T = 0.693·RB·CB</td></tr>
+        <tr><td>Period</td><td style="font-family:var(--mono);font-size:11px">T = T1 + T2<br>f = 1/T</td><td>Određuje učestalost okidača</td></tr>
+        <tr><td>UBE baza eksponencijala?</td><td>Da — oba tranzistora<br><small style="color:var(--muted)">(τ = RB·C)</small></td><td>Samo TR1 ima (τ = RB·CB)<br>TR2 nema! (samo R)</td></tr>
+        <tr><td>UCE skok oblika?</td><td>Ekspon. porast (τ = RC·C)</td><td>Skoro trenutan (nema C u kol. kolu TR1)</td></tr>
+        <tr><td>Inicijalno stanje</td><td>Nestabilno — pa samo ide u kvazi</td><td>TR1 zasičen (RB→UCC), TR2 zakočen</td></tr>
+        <tr><td>Primjena</td><td>Generator takta, blinker, oscilator</td><td>Tajmer, impuls zadanog trajanja</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card" style="border-color:var(--green)">
+      <div class="card-title"><span style="color:var(--green)">✓</span> Astabil — za ispit pamti</div>
+      <div class="pill-row">
+        <span class="pill" style="background:#001a10;color:var(--green);border:1px solid var(--green)">Samo pozitivna sprega</span>
+        <span class="pill" style="background:#001a10;color:var(--green);border:1px solid var(--green)">Sam osciluje</span>
+        <span class="pill" style="background:#001a10;color:var(--green);border:1px solid var(--green)">2 kvazistabilna</span>
+      </div>
+      <ul class="info-list">
+        <li><span class="badge badge-g">T1</span> 0.693 · RB2 · C2</li>
+        <li><span class="badge badge-g">T2</span> 0.693 · RB1 · C1</li>
+        <li><span class="badge badge-g">f</span> 1 / (T1 + T2)</li>
+        <li><span class="badge badge-g">τRC</span> RC·C → brza promjena na kolektoru</li>
+        <li><span class="badge badge-g">τRB</span> RB·C → spora promjena na bazi</li>
+        <li><span class="badge badge-g">0.693</span> = ln(2) → iz eksponencijalne mat.</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:var(--yellow)">
+      <div class="card-title yellow"><span style="color:var(--yellow)">✓</span> Monostabil — za ispit pamti</div>
+      <div class="pill-row">
+        <span class="pill" style="background:#2a1d00;color:var(--yellow);border:1px solid var(--yellow)">Pozitivna + Negativna</span>
+        <span class="pill" style="background:#2a1d00;color:var(--yellow);border:1px solid var(--yellow)">Treba okidač</span>
+      </div>
+      <ul class="info-list">
+        <li><span class="badge badge-y">CB</span> Pozitivna sprega → kvazistabilno</li>
+        <li><span class="badge badge-y">R1-R2</span> Negativna sprega → stabilno</li>
+        <li><span class="badge badge-y">RB→UCC</span> TR1 odmah zasičen po uklj.</li>
+        <li><span class="badge badge-y">UCE1</span> Skoro trenutan skok (bez C u kolu)</li>
+        <li><span class="badge badge-y">UBE1</span> Ekspon. rast, τ = RB·CB</li>
+        <li><span class="badge badge-y">UBE2</span> Nema ekspon.! (samo R1-R2)</li>
+        <li><span class="badge badge-y">T</span> = 0.693 · RB · CB</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ===================== REGISTRI & BROJACI ===================== -->
+<div id="registri" class="panel">
+
+<!-- Sub-nav -->
+<div style="display:flex;gap:4px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:5px;margin-bottom:20px">
+  <button class="tab-btn reg active" id="rb0" onclick="showReg(0)">📦 Stacionarni</button>
+  <button class="tab-btn reg" id="rb1" onclick="showReg(1)">➡ Pomjerački</button>
+  <button class="tab-btn reg" id="rb2" onclick="showReg(2)">🔁 Kružni / Johnson</button>
+  <button class="tab-btn reg" id="rb3" onclick="showReg(3)">⬆⬇ Bidirekcioni</button>
+  <button class="tab-btn reg" id="rb4" onclick="showReg(4)">🔢 Binarni Brojač</button>
+  <button class="tab-btn reg" id="rb5" onclick="showReg(5)">🎯 Dekadni / Modul N</button>
+  <button class="tab-btn reg" id="rb6" onclick="showReg(6)">🔀 Sekvenca</button>
+</div>
+
+<!-- ---- 0: STACIONARNI ---- -->
+<div id="reg0" class="reg-sub">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Stacionarni registar — paralelni upis, paralelni ispis</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:14px">
+          Svaki D flip-flop je <strong style="color:var(--green)">neovisan</strong> — ima vlastiti ulaz i izlaz. Nema fizičke veze između flip-flopova osim zajedničkog CLK signala. Na uzlaznu ivicu CLK-a svaki flip-flop "uhvati" vrijednost sa svog ulaza D.
+        </p>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- CLK line -->
+            <line x1="10" y1="170" x2="330" y2="170" stroke="#1e2d45" stroke-width="1" stroke-dasharray="4,3"/>
+            <text x="5" y="167" fill="#4a607a" font-size="8">CLK</text>
+            <!-- FF boxes -->
+            <g>
+              <rect x="20" y="60" width="60" height="80" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+              <text x="50" y="88" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">FF0</text>
+              <text x="50" y="102" fill="#4a607a" font-size="8" text-anchor="middle">D flip-flop</text>
+              <text x="50" y="115" fill="#3b9eff" font-size="8" text-anchor="middle">Q0</text>
+              <!-- D input -->
+              <line x1="50" y1="40" x2="50" y2="60" stroke="#ffb800" stroke-width="1.5"/>
+              <text x="50" y="36" fill="#ffb800" font-size="8" text-anchor="middle">D0</text>
+              <!-- Q output -->
+              <line x1="50" y1="140" x2="50" y2="160" stroke="#3b9eff" stroke-width="1.5"/>
+              <!-- CLK in -->
+              <line x1="50" y1="160" x2="50" y2="170" stroke="#4a607a" stroke-width="1" stroke-dasharray="3,2"/>
+            </g>
+            <g>
+              <rect x="110" y="60" width="60" height="80" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+              <text x="140" y="88" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">FF1</text>
+              <text x="140" y="102" fill="#4a607a" font-size="8" text-anchor="middle">D flip-flop</text>
+              <text x="140" y="115" fill="#3b9eff" font-size="8" text-anchor="middle">Q1</text>
+              <line x1="140" y1="40" x2="140" y2="60" stroke="#ffb800" stroke-width="1.5"/>
+              <text x="140" y="36" fill="#ffb800" font-size="8" text-anchor="middle">D1</text>
+              <line x1="140" y1="140" x2="140" y2="160" stroke="#3b9eff" stroke-width="1.5"/>
+              <line x1="140" y1="160" x2="140" y2="170" stroke="#4a607a" stroke-width="1" stroke-dasharray="3,2"/>
+            </g>
+            <g>
+              <rect x="200" y="60" width="60" height="80" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+              <text x="230" y="88" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">FF2</text>
+              <text x="230" y="102" fill="#4a607a" font-size="8" text-anchor="middle">D flip-flop</text>
+              <text x="230" y="115" fill="#3b9eff" font-size="8" text-anchor="middle">Q2</text>
+              <line x1="230" y1="40" x2="230" y2="60" stroke="#ffb800" stroke-width="1.5"/>
+              <text x="230" y="36" fill="#ffb800" font-size="8" text-anchor="middle">D2</text>
+              <line x1="230" y1="140" x2="230" y2="160" stroke="#3b9eff" stroke-width="1.5"/>
+              <line x1="230" y1="160" x2="230" y2="170" stroke="#4a607a" stroke-width="1" stroke-dasharray="3,2"/>
+            </g>
+            <!-- NO connection between FFs -->
+            <text x="90" y="105" fill="#ff4757" font-size="9" text-anchor="middle">✗</text>
+            <text x="180" y="105" fill="#ff4757" font-size="9" text-anchor="middle">✗</text>
+            <text x="170" y="185" fill="#4a607a" font-size="9" text-anchor="middle">Nema fizičke veze između FF-ova!</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Interaktivni vremenski dijagram</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Klikni na ivice CLK-a ispod da vidiš kako svaki FF uzima svoju vrijednost nezavisno</p>
+        <canvas id="statCanvas" width="560" height="220" style="width:100%;background:#050810;border-radius:8px;border:1px solid var(--border)"></canvas>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-g" style="font-size:12px;padding:6px 14px" onclick="statStep()">▶ Sljedeća ivica CLK-a</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="statReset()">↺ Reset</button>
+        </div>
+        <div class="explain-box" id="statExplain" style="margin-top:10px;font-size:12px">
+          Pritisni <strong>Sljedeća ivica</strong> da vidiš šta se dešava na svakom taktu.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Ključna pravila</div>
+        <ul class="info-list">
+          <li><span class="badge badge-g">D ff</span> Koristimo D flip-flop jer direktno prenosi ulaz na izlaz — Q = D</li>
+          <li><span class="badge badge-b">CLK↑</span> Promjena se dešava SAMO na uzlaznoj ivici CLK-a</li>
+          <li><span class="badge badge-p">Neovisno</span> Svaki FF rješavamo zasebno — dijagram po dijagram</li>
+          <li><span class="badge badge-r">Ignorisanje</span> Promjena D između dvije ivice — FF je ne vidi!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---- 1: POMJERAČKI ---- -->
+<div id="reg1" class="reg-sub" style="display:none">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Pomjerački (Shift) registar — serijski upis</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:14px">
+          Izlaz svakog FF je ulaz <strong style="color:var(--green)">sljedećeg</strong>. Podatak putuje kroz registar jedan korak po taktu. Za n FF-ova, podatak sa ulaza pojavi se na izlazu nakon <strong style="color:var(--yellow)">n taktova</strong>.
+        </p>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 340 160" xmlns="http://www.w3.org/2000/svg">
+            <!-- SI -->
+            <text x="5" y="78" fill="#ffb800" font-size="8">SI</text>
+            <line x1="18" y1="75" x2="30" y2="75" stroke="#ffb800" stroke-width="1.5" marker-end="url(#arr)"/>
+            <!-- FFs -->
+            <defs><marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#ffb800" stroke-width="1.5"/></marker>
+            <marker id="arb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#3b9eff" stroke-width="1.5"/></marker></defs>
+            <rect x="30" y="50" width="55" height="55" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="57" y="74" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">FF0</text>
+            <text x="57" y="87" fill="#3b9eff" font-size="9" text-anchor="middle">Q0</text>
+            <line x1="57" y1="130" x2="57" y2="140" stroke="#4a607a" stroke-width="1"/>
+            <text x="57" y="150" fill="#4a607a" font-size="8" text-anchor="middle">CLK</text>
+
+            <line x1="85" y1="75" x2="110" y2="75" stroke="#3b9eff" stroke-width="1.5" marker-end="url(#arb)"/>
+            <text x="97" y="68" fill="#3b9eff" font-size="7" text-anchor="middle">Q0→D1</text>
+
+            <rect x="110" y="50" width="55" height="55" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="137" y="74" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">FF1</text>
+            <text x="137" y="87" fill="#3b9eff" font-size="9" text-anchor="middle">Q1</text>
+            <line x1="137" y1="130" x2="137" y2="140" stroke="#4a607a" stroke-width="1"/>
+
+            <line x1="165" y1="75" x2="190" y2="75" stroke="#3b9eff" stroke-width="1.5" marker-end="url(#arb)"/>
+            <text x="177" y="68" fill="#3b9eff" font-size="7" text-anchor="middle">Q1→D2</text>
+
+            <rect x="190" y="50" width="55" height="55" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="217" y="74" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">FF2</text>
+            <text x="217" y="87" fill="#3b9eff" font-size="9" text-anchor="middle">Q2</text>
+            <line x1="217" y1="130" x2="217" y2="140" stroke="#4a607a" stroke-width="1"/>
+
+            <line x1="245" y1="75" x2="270" y2="75" stroke="#3b9eff" stroke-width="1.5" marker-end="url(#arb)"/>
+            <text x="257" y="68" fill="#3b9eff" font-size="7" text-anchor="middle">Q2→D3</text>
+
+            <rect x="270" y="50" width="55" height="55" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="297" y="74" fill="#00e5a0" font-size="10" font-weight="bold" text-anchor="middle">FF3</text>
+            <text x="297" y="87" fill="#3b9eff" font-size="9" text-anchor="middle">SO</text>
+            <line x1="297" y1="130" x2="297" y2="140" stroke="#4a607a" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Zašto koristimo PRETHODNO stanje?</div>
+        <div style="background:#0a0617;border:1px solid #2a1d45;border-radius:8px;padding:12px;font-size:12px;line-height:1.9">
+          <span style="color:var(--yellow)">U trenutku uzlazne ivice CLK-a</span> — signal sa izlaza prethodnog FF-a još nije stigao da se prenese na novi izlaz.<br>
+          <span style="color:var(--muted)">→</span> Svaki FF "gleda" <strong style="color:var(--green)">stanje koje je prethodni FF IMAO PRIJE te ivice</strong>.<br>
+          <span style="color:var(--muted)">→</span> Zbog toga rješavamo <strong style="color:var(--purple)">ivicu po ivicu</strong>, a ne FF po FF!
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Simulator pomjeranja bita</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Unesi 4-bitni podatak na SI i pritisni takt da ga propuštaš kroz registar</p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--muted)">SI bit:</span>
+          <button class="btn btn-g" style="font-size:13px;padding:6px 14px" onclick="shiftPush(1)">Unesi 1</button>
+          <button class="btn btn-muted" style="font-size:13px;padding:6px 14px" onclick="shiftPush(0)">Unesi 0</button>
+          <button class="btn btn-muted" style="font-size:13px;padding:6px 14px" onclick="shiftFull()">↺ Reset</button>
+        </div>
+        <div id="shiftViz" style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap"></div>
+        <canvas id="shiftCanvas" width="560" height="180" style="width:100%;background:#050810;border-radius:8px;border:1px solid var(--border)"></canvas>
+        <div class="explain-box" id="shiftExplain" style="margin-top:10px;font-size:12px">
+          Pritisni <strong>Unesi 1</strong> ili <strong>Unesi 0</strong> da ubacuješ bit na serijski ulaz.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---- 2: KRUŽNI / JOHNSON ---- -->
+<div id="reg2" class="reg-sub" style="display:none">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Prstenasti (Ring) brojač</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:10px">
+          Izlaz <strong style="color:var(--green)">Q posljednjeg FF-a</strong> vraća se na ulaz prvog. Sa n FF-ova — n stanja, dijeli frekvenciju sa <strong style="color:var(--yellow)">n</strong>.
+        </p>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="arrg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#00e5a0" stroke-width="1.5"/></marker></defs>
+            <rect x="20" y="70" width="50" height="44" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="45" y="90" fill="#00e5a0" font-size="9" font-weight="bold" text-anchor="middle">FF0</text>
+            <text x="45" y="103" fill="#3b9eff" font-size="8" text-anchor="middle">Q0</text>
+
+            <rect x="100" y="70" width="50" height="44" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="125" y="90" fill="#00e5a0" font-size="9" font-weight="bold" text-anchor="middle">FF1</text>
+            <text x="125" y="103" fill="#3b9eff" font-size="8" text-anchor="middle">Q1</text>
+
+            <rect x="180" y="70" width="50" height="44" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="205" y="90" fill="#00e5a0" font-size="9" font-weight="bold" text-anchor="middle">FF2</text>
+            <text x="205" y="103" fill="#3b9eff" font-size="8" text-anchor="middle">Q2</text>
+
+            <rect x="100" y="155" width="50" height="40" rx="6" fill="#0d1421" stroke="#00e5a0" stroke-width="1.5"/>
+            <text x="125" y="173" fill="#00e5a0" font-size="9" font-weight="bold" text-anchor="middle">FF3</text>
+            <text x="125" y="187" fill="#3b9eff" font-size="8" text-anchor="middle">Qn</text>
+
+            <!-- Arrows fwd -->
+            <line x1="70" y1="92" x2="100" y2="92" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#arrg)"/>
+            <line x1="150" y1="92" x2="180" y2="92" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#arrg)"/>
+            <!-- down -->
+            <line x1="205" y1="114" x2="205" y2="175" stroke="#00e5a0" stroke-width="1.5"/>
+            <line x1="205" y1="175" x2="150" y2="175" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#arrg)"/>
+            <!-- return Q back to FF0 -->
+            <line x1="100" y1="175" x2="45" y2="175" stroke="#ffb800" stroke-width="2"/>
+            <line x1="45" y1="175" x2="45" y2="114" stroke="#ffb800" stroke-width="2" marker-end="url(#arrg)"/>
+            <text x="70" y="192" fill="#ffb800" font-size="8" text-anchor="middle">Q povratna veza</text>
+            <text x="150" y="12" fill="#ffb800" font-size="9" text-anchor="middle">Signal kruži! n stanja → dijeli f sa n</text>
+          </svg>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Johnsonov brojač</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:8px">
+          Jedina razlika: vraća se <strong style="color:var(--red)">Q̄ (komplement)</strong> posljednjeg FF-a. Sa n FF-ova — <strong style="color:var(--yellow)">2n stanja</strong>, dijeli frekvenciju sa <strong style="color:var(--yellow)">2n</strong>.
+        </p>
+        <div style="background:#0a0617;border:1px solid #2a1d45;border-radius:8px;padding:12px;font-size:12px;line-height:1.8">
+          <span style="color:var(--green)">Ring:</span> Q → ulaz FF0 → n stanja<br>
+          <span style="color:var(--red)">Johnson:</span> Q̄ → ulaz FF0 → 2n stanja<br>
+          <span style="color:var(--purple)">Zašto 2n?</span> Komplement "hvata" i fazu punjenja i fazu pražnjenja.
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Interaktivni simulator — Ring vs Johnson</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <button class="btn btn-g" style="font-size:12px;padding:6px 14px" id="ringBtn" onclick="ringMode='ring';ringReset();ringBtn.style.background='var(--green)';johnBtn.style.background='var(--border)';johnBtn.style.color='var(--text)'">Ring (Q)</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" id="johnBtn" onclick="ringMode='johnson';ringReset();johnBtn.style.background='var(--red)';johnBtn.style.color='#fff';ringBtn.style.background='var(--border)';ringBtn.style.color='var(--text)'">Johnson (Q̄)</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="ringStep()">▶ Takt impulsa</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="ringReset()">↺ Reset</button>
+        </div>
+        <div id="ringViz" style="margin-bottom:12px"></div>
+        <canvas id="ringCanvas" width="560" height="200" style="width:100%;background:#050810;border-radius:8px;border:1px solid var(--border)"></canvas>
+        <div class="explain-box" id="ringExplain" style="margin-top:10px;font-size:12px">
+          Ring: 4 FF-a → 4 stanja. Johnson: 4 FF-a → 8 stanja.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---- 3: BIDIREKCIONI ---- -->
+<div id="reg3" class="reg-sub" style="display:none">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Bidirekcioni registar — pomak lijevo / desno</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:10px">
+          Ulaz <strong style="color:var(--blue)">DIR</strong> određuje smjer pomaka. <strong style="color:var(--green)">DIR=1</strong>: ulaz sa lijeve strane (SIEL), pomak desno. <strong style="color:var(--red)">DIR=0</strong>: ulaz sa desne strane (SIER), pomak lijevo.
+        </p>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#00e5a0" stroke-width="1.5"/></marker>
+              <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#ff4757" stroke-width="1.5"/></marker>
+            </defs>
+            <!-- SIEL -->
+            <text x="2" y="92" fill="#00e5a0" font-size="7">SIEL</text>
+            <line x1="22" y1="90" x2="34" y2="90" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#ag)"/>
+            <!-- SIER -->
+            <text x="315" y="140" fill="#ff4757" font-size="7">SIER</text>
+            <line x1="313" y1="136" x2="300" y2="136" stroke="#ff4757" stroke-width="1.5" marker-end="url(#ar)"/>
+            <!-- FFs -->
+            <rect x="34" y="65" width="52" height="56" rx="6" fill="#0d1421" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="60" y="88" fill="#3b9eff" font-size="9" font-weight="bold" text-anchor="middle">Q0</text>
+            <text x="60" y="101" fill="#4a607a" font-size="7" text-anchor="middle">FF0</text>
+            <rect x="114" y="65" width="52" height="56" rx="6" fill="#0d1421" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="140" y="88" fill="#3b9eff" font-size="9" font-weight="bold" text-anchor="middle">Q1</text>
+            <text x="140" y="101" fill="#4a607a" font-size="7" text-anchor="middle">FF1</text>
+            <rect x="194" y="65" width="52" height="56" rx="6" fill="#0d1421" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="220" y="88" fill="#3b9eff" font-size="9" font-weight="bold" text-anchor="middle">Q2</text>
+            <text x="220" y="101" fill="#4a607a" font-size="7" text-anchor="middle">FF2</text>
+            <rect x="250" y="65" width="50" height="56" rx="6" fill="#0d1421" stroke="#3b9eff" stroke-width="1.5"/>
+            <text x="275" y="88" fill="#3b9eff" font-size="9" font-weight="bold" text-anchor="middle">Q3</text>
+            <text x="275" y="101" fill="#4a607a" font-size="7" text-anchor="middle">FF3</text>
+            <!-- DIR=1 arrows (desno) -->
+            <line x1="86" y1="85" x2="114" y2="85" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#ag)"/>
+            <line x1="166" y1="85" x2="194" y2="85" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#ag)"/>
+            <line x1="246" y1="85" x2="252" y2="85" stroke="#00e5a0" stroke-width="1.5" marker-end="url(#ag)"/>
+            <text x="170" y="60" fill="#00e5a0" font-size="8" text-anchor="middle">→ DIR=1: pomak desno →</text>
+            <!-- DIR=0 arrows (lijevo) -->
+            <line x1="114" y1="112" x2="86" y2="112" stroke="#ff4757" stroke-width="1.5" marker-end="url(#ar)"/>
+            <line x1="194" y1="112" x2="166" y2="112" stroke="#ff4757" stroke-width="1.5" marker-end="url(#ar)"/>
+            <line x1="250" y1="112" x2="246" y2="112" stroke="#ff4757" stroke-width="1.5" marker-end="url(#ar)"/>
+            <text x="170" y="158" fill="#ff4757" font-size="8" text-anchor="middle">← DIR=0: pomak lijevo ←</text>
+            <!-- DIR control -->
+            <text x="170" y="190" fill="#b87cff" font-size="9" text-anchor="middle">DIR ulaz — sklop za selekciju (I + ILI kola)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Simulator bidirekcionog registra</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--muted)">DIR:</span>
+          <button class="btn btn-g" id="dirBtn" style="font-size:12px;padding:6px 14px;min-width:80px" onclick="biDir=1-biDir;updateDirBtn()">DIR = 1 →</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="biStep()">▶ Takt</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="biReset()">↺ Reset</button>
+        </div>
+        <div id="biViz" style="margin-bottom:14px"></div>
+        <canvas id="biCanvas" width="560" height="200" style="width:100%;background:#050810;border-radius:8px;border:1px solid var(--border)"></canvas>
+        <div class="explain-box" id="biExplain" style="margin-top:10px;font-size:12px">
+          Postavi DIR i pritisni Takt da vidiš pomak podataka.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---- 4: BINARNI BROJAČ ---- -->
+<div id="reg4" class="reg-sub" style="display:none">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Asinhroni binarni brojač (JK flip-flop, silazna ivica)</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:10px">
+          FF0 reaguje na svaku <strong style="color:var(--red)">silaznu ivicu CLK-a</strong>. Svaki naredni FF reaguje samo na <strong style="color:var(--yellow)">silazni pad Q prethodnog</strong>. Npr. FF1 se mijenja samo kad Q0 ide s 1→0.
+        </p>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 340 140" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="aclk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#ffb800" stroke-width="1.5"/></marker></defs>
+            <text x="2" y="68" fill="#4a607a" font-size="8">CLK↓</text>
+            <line x1="20" y1="65" x2="34" y2="65" stroke="#4a607a" stroke-width="1.5" marker-end="url(#aclk)"/>
+            <!-- FFs -->
+            <rect x="34" y="40" width="55" height="50" rx="6" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="61" y="62" fill="#ffb800" font-size="9" font-weight="bold" text-anchor="middle">FF0</text>
+            <text x="61" y="75" fill="#c8d6e8" font-size="8" text-anchor="middle">Q0 (×1)</text>
+            <text x="61" y="120" fill="#4a607a" font-size="7" text-anchor="middle">J=K=1</text>
+
+            <line x1="89" y1="65" x2="114" y2="65" stroke="#ffb800" stroke-width="2" marker-end="url(#aclk)"/>
+            <text x="101" y="57" fill="#ffb800" font-size="7" text-anchor="middle">Q0↓→CLK</text>
+
+            <rect x="114" y="40" width="55" height="50" rx="6" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="141" y="62" fill="#ffb800" font-size="9" font-weight="bold" text-anchor="middle">FF1</text>
+            <text x="141" y="75" fill="#c8d6e8" font-size="8" text-anchor="middle">Q1 (×2)</text>
+
+            <line x1="169" y1="65" x2="194" y2="65" stroke="#ffb800" stroke-width="2" marker-end="url(#aclk)"/>
+            <text x="181" y="57" fill="#ffb800" font-size="7" text-anchor="middle">Q1↓→CLK</text>
+
+            <rect x="194" y="40" width="55" height="50" rx="6" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="221" y="62" fill="#ffb800" font-size="9" font-weight="bold" text-anchor="middle">FF2</text>
+            <text x="221" y="75" fill="#c8d6e8" font-size="8" text-anchor="middle">Q2 (×4)</text>
+
+            <line x1="249" y1="65" x2="274" y2="65" stroke="#ffb800" stroke-width="2" marker-end="url(#aclk)"/>
+            <rect x="274" y="40" width="55" height="50" rx="6" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="301" y="62" fill="#ffb800" font-size="9" font-weight="bold" text-anchor="middle">FF3</text>
+            <text x="301" y="75" fill="#c8d6e8" font-size="8" text-anchor="middle">Q3 (×8)</text>
+          </svg>
+        </div>
+        <div class="card-title" style="margin-top:16px"><span>//</span> Brojač nazad — jedina razlika</div>
+        <div style="background:#0a0617;border:1px solid #2a1d45;border-radius:8px;padding:10px;font-size:12px;line-height:1.8">
+          <span style="color:var(--green)">Naprijed:</span> Q prethodnog → CLK sljedećeg<br>
+          <span style="color:var(--red)">Nazad:</span> <strong>Q̄ (komplement)</strong> prethodnog → CLK sljedećeg<br>
+          <span style="color:var(--muted)">→ Kad Q ide 0→1, Q̄ ide 1→0 (silazna!) → okida sljedeći odmah</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Interaktivni 4-bitni binarni brojač</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-y" id="cntDirBtn" style="font-size:12px;padding:6px 14px;min-width:100px" onclick="cntDir=1-cntDir;updateCntDir()">▲ Naprijed</button>
+          <button class="btn btn-g" style="font-size:12px;padding:6px 14px" onclick="cntStep()">▶ Takt impulsa</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="cntAuto()">⚡ Auto</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="cntReset()">↺ Reset</button>
+        </div>
+        <div id="cntViz" style="margin-bottom:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
+        <canvas id="cntCanvas" width="560" height="220" style="width:100%;background:#050810;border-radius:8px;border:1px solid var(--border)"></canvas>
+        <div class="explain-box" id="cntExplain" style="margin-top:10px;font-size:12px">
+          Pritisni <strong>Takt impulsa</strong> ili <strong>Auto</strong> da pokreneš brojač.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---- 5: DEKADNI / MODUL N ---- -->
+<div id="reg5" class="reg-sub" style="display:none">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Dekadni brojač (Modul 10) — NI kolo kao "kočnica"</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:10px">
+          Kada se pojavi binarna kombinacija <strong style="color:var(--red)">1010 (=10)</strong>, NI kolo daje nulu na izlazu i momentalno resetuje sve FF-ove nazad na 0000. Kombinacija 10 je vidljiva samo na kratko (ns).
+        </p>
+        <div class="schematic-wrap">
+          <svg viewBox="0 0 340 180" xmlns="http://www.w3.org/2000/svg">
+            <defs><marker id="an" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="#ff4757" stroke-width="1.5"/></marker></defs>
+            <rect x="15" y="30" width="46" height="44" rx="5" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="38" y="50" fill="#ffb800" font-size="8" font-weight="bold" text-anchor="middle">FF0</text>
+            <text x="38" y="63" fill="#c8d6e8" font-size="7" text-anchor="middle">Q0 (1)</text>
+
+            <rect x="80" y="30" width="46" height="44" rx="5" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="103" y="50" fill="#ffb800" font-size="8" font-weight="bold" text-anchor="middle">FF1</text>
+            <text x="103" y="63" fill="#c8d6e8" font-size="7" text-anchor="middle">Q1 (2)</text>
+
+            <rect x="145" y="30" width="46" height="44" rx="5" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="168" y="50" fill="#ffb800" font-size="8" font-weight="bold" text-anchor="middle">FF2</text>
+            <text x="168" y="63" fill="#c8d6e8" font-size="7" text-anchor="middle">Q2 (4)</text>
+
+            <rect x="210" y="30" width="46" height="44" rx="5" fill="#0d1421" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="233" y="50" fill="#ffb800" font-size="8" font-weight="bold" text-anchor="middle">FF3</text>
+            <text x="233" y="63" fill="#c8d6e8" font-size="7" text-anchor="middle">Q3 (8)</text>
+
+            <!-- NI kolo -->
+            <rect x="272" y="90" width="55" height="36" rx="6" fill="#2a0009" stroke="#ff4757" stroke-width="2"/>
+            <text x="299" y="110" fill="#ff4757" font-size="9" font-weight="bold" text-anchor="middle">NI kolo</text>
+            <circle cx="325" cy="108" r="4" fill="#ff4757"/>
+
+            <!-- Q1 → NI -->
+            <line x1="103" y1="74" x2="103" y2="100" stroke="#ff4757" stroke-width="1.5"/>
+            <line x1="103" y1="100" x2="272" y2="100" stroke="#ff4757" stroke-width="1.5" marker-end="url(#an)"/>
+            <text x="180" y="97" fill="#ff4757" font-size="7" text-anchor="middle">Q1</text>
+            <!-- Q3 → NI -->
+            <line x1="233" y1="74" x2="233" y2="108" stroke="#ff4757" stroke-width="1.5"/>
+            <line x1="233" y1="108" x2="272" y2="108" stroke="#ff4757" stroke-width="1.5" marker-end="url(#an)"/>
+            <text x="250" y="105" fill="#ff4757" font-size="7">Q3</text>
+            <!-- NI → CLR (dashed back) -->
+            <line x1="329" y1="108" x2="338" y2="108" stroke="#ff4757" stroke-width="1.5"/>
+            <line x1="338" y1="108" x2="338" y2="145" stroke="#ff4757" stroke-width="1.5"/>
+            <line x1="338" y1="145" x2="10" y2="145" stroke="#ff4757" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <line x1="10" y1="145" x2="10" y2="52" stroke="#ff4757" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="170" y="158" fill="#ff4757" font-size="8" text-anchor="middle">Reset (CLR) svih FF-ova čim NI=0</text>
+
+            <text x="170" y="175" fill="#4a607a" font-size="7" text-anchor="middle">Q1=1 I Q3=1 → kombinacija 1010 → RESET → 0000</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Kalkulator modula — koliko FF-ova trebaš?</div>
+        <div class="slider-row" style="margin-bottom:10px">
+          <label style="width:110px">Modul N:</label>
+          <input type="range" min="3" max="128" value="10" id="modSlider" oninput="updateModCalc(this.value)" style="flex:1;accent-color:var(--purple)">
+          <span class="val" id="modVal" style="color:var(--purple);width:36px">10</span>
+        </div>
+        <div id="modResult" style="background:#0a0617;border:1px solid #2a1d45;border-radius:8px;padding:12px;font-size:12px;line-height:2"></div>
+        <canvas id="modCanvas" width="560" height="180" style="width:100%;background:#050810;border-radius:8px;border:1px solid var(--border);margin-top:12px"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---- 6: SEKVENCIJALNA MREŽA ---- -->
+<div id="reg6" class="reg-sub" style="display:none">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Projektovanje sekvencijalne mreže</div>
+        <p style="font-size:13px;line-height:1.7;margin-bottom:10px">
+          Za <strong style="color:var(--purple)">nasumičnu sekvencu</strong> stanja (npr. 5→7→3→4→6→0→1→2→5), ne možemo koristiti asinhroni sklop. Projektujemo sinhronu mrežu koristeći tabelu pobude D ili T flip-flopa.
+        </p>
+        <div class="card" style="background:#050810;border-color:#2a1d45;margin-top:0">
+          <div style="font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:8px">TABELA POBUDE</div>
+          <div style="overflow-x:auto">
+          <table>
+            <tr><th>Stanje</th><th>Q2Q1Q0</th><th>Sljed.</th><th>Q2'Q1'Q0'</th><th style="color:var(--blue)">D2 D1 D0</th><th style="color:var(--green)">T2 T1 T0</th></tr>
+            <tr><td>5</td><td>101</td><td>→7</td><td>111</td><td style="color:var(--blue)">1 1 1</td><td style="color:var(--green)">0 1 0</td></tr>
+            <tr><td>7</td><td>111</td><td>→3</td><td>011</td><td style="color:var(--blue)">0 1 1</td><td style="color:var(--green)">1 0 0</td></tr>
+            <tr><td>3</td><td>011</td><td>→4</td><td>100</td><td style="color:var(--blue)">1 0 0</td><td style="color:var(--green)">1 1 1</td></tr>
+            <tr><td>4</td><td>100</td><td>→6</td><td>110</td><td style="color:var(--blue)">1 1 0</td><td style="color:var(--green)">0 1 0</td></tr>
+            <tr><td>6</td><td>110</td><td>→0</td><td>000</td><td style="color:var(--blue)">0 0 0</td><td style="color:var(--green)">1 1 0</td></tr>
+            <tr><td>0</td><td>000</td><td>→1</td><td>001</td><td style="color:var(--blue)">0 0 1</td><td style="color:var(--green)">0 0 1</td></tr>
+            <tr><td>1</td><td>001</td><td>→2</td><td>010</td><td style="color:var(--blue)">0 1 0</td><td style="color:var(--green)">0 1 1</td></tr>
+            <tr><td>2</td><td>010</td><td>→5</td><td>101</td><td style="color:var(--blue)">1 0 1</td><td style="color:var(--green)">1 1 1</td></tr>
+          </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span>//</span> Pravila tabele pobude</div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div style="flex:1;background:#00183a;border:1px solid var(--blue);border-radius:8px;padding:12px;font-size:12px">
+            <div style="color:var(--blue);font-weight:600;margin-bottom:6px">D flip-flop</div>
+            D = <strong style="color:#fff">naredno stanje direktno</strong><br><br>
+            0→0: D=0<br>0→1: D=1<br>1→0: D=0<br>1→1: D=1
+          </div>
+          <div style="flex:1;background:#001a10;border:1px solid var(--green);border-radius:8px;padding:12px;font-size:12px">
+            <div style="color:var(--green);font-weight:600;margin-bottom:6px">T flip-flop</div>
+            T=1 ako se stanje <strong style="color:#fff">mijenja</strong><br><br>
+            0→0: T=0<br>0→1: T=1<br>1→0: T=1<br>1→1: T=0
+          </div>
+        </div>
+        <div class="card-title"><span>//</span> Simulator sekvencijalne mreže</div>
+        <div id="seqViz" style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <button class="btn btn-g" style="font-size:12px;padding:6px 14px" onclick="seqStep()">▶ Sljedeće stanje</button>
+          <button class="btn btn-muted" style="font-size:12px;padding:6px 14px" onclick="seqReset()">↺ Reset na 5</button>
+        </div>
+        <canvas id="seqCanvas" width="560" height="190" style="width:100%;background:#050810;border-radius:8px;border:1px solid var(--border)"></canvas>
+        <div class="explain-box" id="seqExplain" style="margin-top:10px;font-size:12px">
+          Sekvenca: <strong>5→7→3→4→6→0→1→2→5...</strong> Pritisni Sljedeće stanje.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end registri panel -->
+
+<script>
+// ======= PANEL SWITCHING =======
+function showPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='ast-rad') { drawStaticAst(); if(!astRunning) drawAstAnim(); }
+  if(id==='mono-rad') { drawMonoCanvas(); }
+}
+
+// ======= ASTABIL ANIMATION =======
+let astRunning=false, astAnimId=null, astT=0, astSpd=1;
+let slT1v=70, slT2v=100;
+
+function toggleAst(){
+  if(astRunning){ astRunning=false; cancelAnimationFrame(astAnimId); }
+  else { astRunning=true; animateAst(); }
+}
+function resetAst(){
+  astRunning=false; cancelAnimationFrame(astAnimId);
+  astT=0; drawStaticAst(); updateAstUI(0,70);
+}
+
+function animateAst(){
+  if(!astRunning)return;
+  astT += astSpd;
+  drawStaticAst(astT);
+  astAnimId=requestAnimationFrame(animateAst);
+}
+
+function drawAstAnim(){ drawStaticAst(0); }
+
+function drawStaticAst(cursor=null){
+  const cv=document.getElementById('astCanvas');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
+
+  const T1=slT1v, T2=slT2v, Tt=T1+T2;
+  const cyc=3, sx=80, ew=W-sx-20;
+  const scX=ew/(cyc*Tt);
+
+  // 4 rows
+  const rows=[
+    {lbl:'UCE1',color:'#00e5a0',yhi:20,ylo:60},
+    {lbl:'UCE2',color:'#3b9eff',yhi:85,ylo:125},
+    {lbl:'UBE1',color:'#ffb800',yhi:148,ylo:195},
+    {lbl:'UBE2',color:'#b87cff',yhi:215,ylo:255},
+  ];
+
+  // Row labels & grid
+  rows.forEach(r=>{
+    ctx.strokeStyle='#1e2d45'; ctx.lineWidth=0.5;
+    [r.yhi,r.ylo].forEach(y=>{ ctx.beginPath(); ctx.moveTo(sx,y); ctx.lineTo(W,y); ctx.stroke(); });
+    ctx.fillStyle=r.color; ctx.font='bold 11px Space Mono, monospace';
+    ctx.fillText(r.lbl, 2, (r.yhi+r.ylo)/2+4);
+  });
+
+  const steps=cyc*Tt;
+  rows.forEach((r,ri)=>{
+    ctx.strokeStyle=r.color; ctx.lineWidth=2; ctx.beginPath();
+    let first=true;
+    for(let t=0;t<=steps;t++){
+      const tm=t%Tt, inP1=tm<T1;
+      let y;
+      if(ri===0) y=inP1?r.ylo-3:r.yhi+3;
+      else if(ri===1) y=inP1?r.yhi+3:r.ylo-3;
+      else if(ri===2){
+        if(inP1) y=r.yhi+5;
+        else { const dt=tm-T1; y=r.ylo+18+(r.yhi+5-r.ylo-18)*Math.exp(-dt/(T2*0.5)); }
+      } else {
+        if(tm>=T1) y=r.yhi+5;
+        else y=r.ylo+18+(r.yhi+5-r.ylo-18)*Math.exp(-tm/(T1*0.5));
+      }
+      const x=sx+t*scX;
+      if(first){ ctx.moveTo(x,y); first=false; }
+      else {
+        const ptm=(t-1)%Tt, pphi=ptm<T1;
+        if(ri<2&&pphi!==inP1){ const nx=sx+t*scX; ctx.lineTo(nx,ri===0?(inP1?r.ylo-3:r.yhi+3):(inP1?r.yhi+3:r.ylo-3)); }
+        ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+  });
+
+  // T1/T2 brackets
+  const bY=H-8;
+  ctx.font='10px Space Mono, monospace';
+  for(let c=0;c<cyc;c++){
+    const x0=sx+c*Tt*scX, x1=x0+T1*scX, x2=x0+Tt*scX;
+    ctx.strokeStyle='#2a3a5c'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x1,0); ctx.lineTo(x1,H-20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2,0); ctx.lineTo(x2,H-20); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#00e5a0';
+    ctx.fillText('T1',(x0+x1)/2-6,bY);
+    ctx.fillStyle='#3b9eff';
+    ctx.fillText('T2',(x1+x2)/2-6,bY);
+  }
+
+  // Cursor
+  if(cursor!=null){
+    const cx=sx+(cursor%(cyc*Tt))*scX;
+    ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke();
+    ctx.setLineDash([]);
+    // Update UI based on current phase
+    const tmod=cursor%Tt;
+    updateAstUI(tmod,T1);
+  }
+}
+
+function updateAstUI(tmod,T1){
+  const inP1=tmod<T1;
+  const b1=document.getElementById('astB1'), b2=document.getElementById('astB2');
+  const v1=document.getElementById('astV1'), v2=document.getElementById('astV2');
+  const ph=document.getElementById('astPhase');
+  const ex=document.getElementById('astExplain');
+  if(inP1){
+    b1.className='state-box sb-on'; v1.textContent='ZASIĆEN ✓';
+    b2.className='state-box sb-off'; v2.textContent='ZAKOČEN ✗';
+    ph.textContent='I Kvazistabilno';
+    ex.innerHTML='<strong>I Kvazistabilno stanje:</strong> TR1 zasičen, TR2 zakočen. C2 se prazni kroz RB2 s vremenskom konstantom <strong>τ = RB2·C2</strong>. Napon na bazi TR2 eksponencijalno raste od negativne vrijednosti prema UCC, ali čim dostigne prag <strong>Uγ2</strong> — kolo se munjevito prebacuje!';
+  } else {
+    b1.className='state-box sb-off'; v1.textContent='ZAKOČEN ✗';
+    b2.className='state-box sb-on'; v2.textContent='ZASIĆEN ✓';
+    ph.textContent='II Kvazistabilno';
+    ex.innerHTML='<strong>II Kvazistabilno stanje:</strong> TR2 zasičen, TR1 zakočen. C1 se prazni kroz RB1 s vremenskom konstantom <strong>τ = RB1·C1</strong>. Napon na bazi TR1 raste dok ne dostigne <strong>Uγ1</strong> — i opet se prebacuje. Ciklus se ponavlja beskonačno!';
+  }
+}
+
+// ======= MONOSTABIL =======
+let monoState='stable', monoTimer=0, monoAnimId2=null;
+const QUASI_DUR=180;
+
+function triggerMono(){
+  if(monoState!=='stable')return;
+  monoState='quasi'; monoTimer=0;
+  updateMonoUI(); animateMono();
+}
+function resetMono(){
+  monoState='stable'; monoTimer=0;
+  cancelAnimationFrame(monoAnimId2);
+  updateMonoUI(); drawMonoCanvas();
+}
+function animateMono(){
+  monoTimer+=1.5;
+  if(monoTimer>=QUASI_DUR){ monoState='stable'; monoTimer=0; updateMonoUI(); drawMonoCanvas(); return; }
+  updateMonoUI(); drawMonoCanvas();
+  monoAnimId2=requestAnimationFrame(animateMono);
+}
+
+function updateMonoUI(){
+  const b1=document.getElementById('moB1'), b2=document.getElementById('moB2');
+  const v1=document.getElementById('moV1'), v2=document.getElementById('moV2');
+  const ph=document.getElementById('moPh'), ex=document.getElementById('moExplain');
+  if(monoState==='stable'){
+    b1.className='state-box sb-on'; v1.textContent='ZASIĆEN ✓';
+    b2.className='state-box sb-off'; v2.textContent='ZAKOČEN ✗';
+    ph.textContent='STABILNO';
+    ex.innerHTML='<strong>STABILNO STANJE:</strong> TR1 zasičen (RB vezan na UCC), TR2 zakočen (negativna sprega R1-R2 drži napon na bazi TR2 ispod 0.7V). CB napunjen. Kolo miruje beskonačno — čeka na negativni impuls.';
+  } else {
+    b1.className='state-box sb-off'; v1.textContent='ZAKOČEN ✗';
+    b2.className='state-box sb-on'; v2.textContent='ZASIĆEN ✓';
+    const pct=Math.round(monoTimer/QUASI_DUR*100);
+    ph.textContent=`KVAZISTABILNO ${pct}%`;
+    ex.innerHTML=`<strong>KVAZISTABILNO STANJE (${pct}%):</strong> TR1 zakočen, TR2 zasičen. CB se prazni kroz RB → napon na lijevoj ploči CB (= baza TR1) raste eksponencijalno s <strong>τ = RB·CB</strong>. Kad dostigne Uγ1 → TR1 provodi → pozitivna sprega munjevito vraća kolo u stabilno stanje!`;
+  }
+}
+
+function drawMonoCanvas(){
+  const cv=document.getElementById('monoCanvas');
+  if(!cv)return;
+  const ctx=cv.getContext('2d');
+  const W=cv.width, H=cv.height;
+  ctx.fillStyle='#050810'; ctx.fillRect(0,0,W,H);
+
+  // Trigger events
+  const trigs=[100,480];
+  const qDur=220;
+  const sx=80;
+
+  const rows=[
+    {lbl:'Uin',color:'#ffb800',yhi:10,ylo:48},
+    {lbl:'UCE1',color:'#00e5a0',yhi:65,ylo:105},
+    {lbl:'UCE2',color:'#3b9eff',yhi:122,ylo:162},
+    {lbl:'UBE1',color:'#b87cff',yhi:180,ylo:255},
+    {lbl:'UBE2',color:'#ffb800',yhi:270,ylo:295},
+  ];
+
+  rows.forEach(r=>{
+    ctx.strokeStyle='#1e2d45'; ctx.lineWidth=0.5;
+    [r.yhi,r.ylo].forEach(y=>{ ctx.beginPath(); ctx.moveTo(sx,y); ctx.lineTo(W,y); ctx.stroke(); });
+    ctx.fillStyle=r.color; ctx.font='bold 10px Space Mono, monospace';
+    ctx.fillText(r.lbl, 4, (r.yhi+r.ylo)/2+4);
+  });
+
+  // current quasi progress
+  const progress=monoState==='quasi'?monoTimer/QUASI_DUR:1.0;
+
+  rows.forEach((r,ri)=>{
+    ctx.strokeStyle=r.color; ctx.lineWidth=2; ctx.beginPath();
+    let first=true;
+    const draw=(x,y)=>{ if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y); };
+
+    for(let x2=sx;x2<=W;x2++){
+      const t=x2-sx;
+      let inQ=false, dt=0, trigIdx=-1;
+      for(let i=0;i<trigs.length;i++){
+        const tp=trigs[i];
+        const thisDur=(i===trigs.length-1&&monoState==='quasi')?monoTimer/QUASI_DUR*qDur:qDur;
+        if(t>=tp&&t<tp+thisDur){ inQ=true; dt=t-tp; trigIdx=i; break; }
+      }
+      let y;
+      if(ri===0){ // Uin
+        const isTrig=trigs.some(tp=>t>=tp&&t<tp+25);
+        y=isTrig?r.ylo-3:r.yhi+5;
+      } else if(ri===1){ // UCE1
+        y=inQ?r.yhi+4:r.ylo-4;
+      } else if(ri===2){ // UCE2
+        y=inQ?r.ylo-4:r.yhi+4;
+      } else if(ri===3){ // UBE1 exp
+        if(!inQ){ y=r.yhi+8; }
+        else { const neg=r.ylo+22; y=neg+(r.yhi+8-neg)*Math.exp(-dt/(qDur*0.55)); }
+      } else { // UBE2 no exp
+        if(!inQ) y=r.yhi+18;
+        else {
+          // step change, nearly instant
+          if(dt<8) y=r.ylo-5;
+          else y=r.ylo-5-(r.ylo-5-r.yhi-18)*Math.min(dt/qDur*1.2,1);
+        }
+      }
+      draw(x2,y);
+    }
+    ctx.stroke();
+  });
+
+  // Trigger markers & T labels
+  ctx.font='9px Space Mono, monospace';
+  trigs.forEach((tp,i)=>{
+    const x=sx+tp;
+    ctx.strokeStyle='#2a3a5c'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+    const thisDur=(i===trigs.length-1&&monoState==='quasi')?monoTimer/QUASI_DUR*qDur:qDur;
+    ctx.beginPath(); ctx.moveTo(x+thisDur,0); ctx.lineTo(x+thisDur,H); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#ffb800'; ctx.fillText('OKIDAČ',x+2,H-2);
+    ctx.fillStyle='#b87cff'; ctx.fillText('← T=0.693·RB·CB →',x+thisDur/2-60,H-2);
+  });
+
+  // UBE2 note
+  ctx.fillStyle='#ffb800'; ctx.font='9px DM Sans, sans-serif';
+  ctx.fillText('← Bez eksponencijale! (samo otpornici R1-R2 u kolu)',sx+5,H-14);
+}
+
+// ======= REGISTRI & BROJACI =======
+
+// Sub-tab switching
+function showReg(idx){
+  for(let i=0;i<7;i++){
+    const el=document.getElementById('reg'+i);
+    const btn=document.getElementById('rb'+i);
+    if(el) el.style.display=(i===idx)?'':'none';
+    if(btn) btn.classList.toggle('active',i===idx);
+  }
+  if(idx===0) statReset();
+  if(idx===1) { shiftFull(); drawShiftCanvas(); }
+  if(idx===2) { ringReset(); }
+  if(idx===3) { biReset(); }
+  if(idx===4) { cntReset(); }
+  if(idx===5) { updateModCalc(10); }
+  if(idx===6) { seqReset(); }
+}
+
+// ---- STACIONARNI ----
+const statSeq=[
+  {d:[1,0,1],exp:'1. uzlazna ivica: Q0←D0=1, Q1←D1=0, Q2←D2=1. Svaki FF nezavisno uzima svoju D vrijednost.'},
+  {d:[0,1,1],exp:'2. uzlazna ivica: D0 je 0 → Q0 ide u 0. D1 je 1 → Q1 ide u 1. D2 ostaje 1.'},
+  {d:[1,1,0],exp:'3. uzlazna ivica: Q0←1, Q1 ostaje 1, Q2←0. Svaki FF gleda SAMO svoj ulaz.'},
+  {d:[0,0,1],exp:'4. uzlazna ivica: Svi se resetuju po svojim D ulazima. Stacionarni = samo parallelni upis!'},
+  {d:[1,0,0],exp:'5. uzlazna ivica: Q0←1, Q1←0, Q2←0. I dalje nezavisno, bez efekta jednih na druge.'},
+];
+let statIdx=0, statHistory=[[0,0,0]];
+function statStep(){
+  if(statIdx>=statSeq.length)return;
+  const s=statSeq[statIdx];
+  statHistory.push([...s.d]);
+  document.getElementById('statExplain').innerHTML=s.exp;
+  statIdx++;
+  drawStatCanvas();
+}
+function statReset(){statIdx=0;statHistory=[[0,0,0]];document.getElementById('statExplain').innerHTML='Pritisni <strong>Sljedeća ivica</strong> da vidiš šta se dešava na svakom taktu.';drawStatCanvas();}
+function drawStatCanvas(){
+  const cv=document.getElementById('statCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const rows=['CLK','Q0','Q1','Q2'];
+  const cols=['#4a607a','#00e5a0','#3b9eff','#b87cff'];
+  const sx=50,ew=W-sx-20,rh=H/4;
+  rows.forEach((r,ri)=>{
+    ctx.fillStyle=cols[ri];ctx.font='bold 11px Space Mono,monospace';
+    ctx.fillText(r,4,ri*rh+rh*0.6);
+    ctx.strokeStyle='#1e2d45';ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(sx,ri*rh+4);ctx.lineTo(W,ri*rh+4);ctx.stroke();
+  });
+  const n=statHistory.length;
+  const xStep=ew/Math.max(n+1,7);
+  ctx.lineWidth=2;
+  for(let ci=0;ci<4;ci++){
+    ctx.strokeStyle=cols[ci];ctx.beginPath();
+    for(let i=0;i<=n;i++){
+      const x=sx+i*xStep;
+      let v;
+      if(ci===0) v=i%2===0?0:1;
+      else v=i===0?0:(statHistory[i-1][ci-1]||0);
+      const y=ci*rh+(v===1?rh*0.15:rh*0.75);
+      if(i===0){ctx.moveTo(x,y);}
+      else{
+        const px=sx+(i-1)*xStep;
+        let pv;
+        if(ci===0) pv=(i-1)%2===0?0:1;
+        else pv=i-1===0?0:(statHistory[i-2]?statHistory[i-2][ci-1]||0:0);
+        const py=ci*rh+(pv===1?rh*0.15:rh*0.75);
+        ctx.lineTo(px,py);
+        if(v!==pv){ctx.lineTo(px,y);}
+        ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+    // Mark rising edges
+    if(ci===0){
+      for(let i=1;i<=n;i++){
+        const x=sx+i*xStep;
+        if(i%2!==0){
+          ctx.strokeStyle='rgba(255,184,0,0.3)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+          ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();ctx.setLineDash([]);
+        }
+      }
+    }
+  }
+}
+
+// ---- POMJERAČKI ----
+let shiftRegs=[0,0,0,0], shiftHistory=[[0,0,0,0]];
+function shiftPush(bit){
+  const prev=[...shiftRegs];
+  shiftRegs=[bit,prev[0],prev[1],prev[2]];
+  shiftHistory.push([...shiftRegs]);
+  document.getElementById('shiftExplain').innerHTML=
+    `Uneseno <strong style="color:var(--yellow)">${bit}</strong> na SI. Q0=${shiftRegs[0]}, Q1=${shiftRegs[1]}, Q2=${shiftRegs[2]}, Q3=${shiftRegs[3]}. Svaki bit pomjeren za jedno mjesto desno.`;
+  renderShiftViz();drawShiftCanvas();
+}
+function shiftFull(){shiftRegs=[0,0,0,0];shiftHistory=[[0,0,0,0]];document.getElementById('shiftExplain').innerHTML='Pritisni <strong>Unesi 1</strong> ili <strong>Unesi 0</strong> da ubacuješ bit na serijski ulaz.';renderShiftViz();drawShiftCanvas();}
+function renderShiftViz(){
+  const d=document.getElementById('shiftViz'); if(!d)return;
+  d.innerHTML=['Q0','Q1','Q2','Q3'].map((n,i)=>`
+    <div style="text-align:center">
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">${n}</div>
+      <div style="width:52px;height:52px;border-radius:8px;border:2px solid ${shiftRegs[i]?'var(--green)':'var(--border)'};background:${shiftRegs[i]?'#001a10':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;font-family:var(--mono);color:${shiftRegs[i]?'var(--green)':'var(--muted)'}">${shiftRegs[i]}</div>
+    </div>`).join('<div style="align-self:center;color:var(--muted);font-size:18px;margin-top:18px">→</div>');
+}
+function drawShiftCanvas(){
+  const cv=document.getElementById('shiftCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const labels=['SI','Q0','Q1','Q2','Q3'];
+  const colors=['#ffb800','#00e5a0','#3b9eff','#b87cff','#ff4757'];
+  const n=shiftHistory.length; const sx=50,ew=W-sx-20,rh=H/5;
+  labels.forEach((l,li)=>{
+    ctx.fillStyle=colors[li];ctx.font='bold 10px Space Mono,monospace';ctx.fillText(l,4,li*rh+rh*0.6);
+    ctx.strokeStyle='#1e2d45';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(sx,li*rh+4);ctx.lineTo(W,li*rh+4);ctx.stroke();
+    ctx.strokeStyle=colors[li];ctx.lineWidth=2;ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x=sx+i*(ew/Math.max(n,8));
+      let v=li===0?0:(shiftHistory[i][li-1]||0);
+      const y=li*rh+(v?rh*0.15:rh*0.78);
+      if(i===0){ctx.moveTo(x,y);}else{
+        const px=sx+(i-1)*(ew/Math.max(n,8));
+        let pv=li===0?0:(shiftHistory[i-1][li-1]||0);
+        const py=li*rh+(pv?rh*0.15:rh*0.78);
+        ctx.lineTo(px,py);if(v!==pv)ctx.lineTo(px,y);ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+  });
+}
+
+// ---- KRUŽNI / JOHNSON ----
+let ringMode='ring', ringState=[1,0,0,0], ringHistory=[[1,0,0,0]], ringStep_count=0;
+function ringReset(){
+  ringState=[1,0,0,0];ringHistory=[[1,0,0,0]];ringStep_count=0;
+  renderRingViz();drawRingCanvas();
+  document.getElementById('ringExplain').innerHTML=ringMode==='ring'?'<strong>Ring:</strong> Q3=1 vraća se direktno na ulaz FF0. 4 stanja ukupno.':'<strong>Johnson:</strong> Q̄3 (komplement) vraća se na ulaz FF0. 8 stanja ukupno!';
+}
+function ringStep(){
+  const prev=[...ringState];
+  const feedback=ringMode==='ring'?prev[3]:(1-prev[3]);
+  ringState=[feedback,prev[0],prev[1],prev[2]];
+  ringHistory.push([...ringState]);
+  ringStep_count++;
+  const stateStr=ringState.map(v=>v).join('');
+  document.getElementById('ringExplain').innerHTML=`Korak ${ringStep_count}: ${ringMode==='ring'?'Q3':'Q̄3'}=${feedback} → Q0. Novo stanje: <strong style="color:var(--yellow)">${stateStr}</strong> (=${parseInt(stateStr,2)})`;
+  renderRingViz();drawRingCanvas();
+}
+function renderRingViz(){
+  const d=document.getElementById('ringViz'); if(!d)return;
+  const labels=['Q0','Q1','Q2','Q3'];
+  d.innerHTML='<div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap">'+
+    ringState.map((v,i)=>`<div style="text-align:center"><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">${labels[i]}</div><div style="width:46px;height:46px;border-radius:8px;border:2px solid ${v?'var(--green)':'var(--border)'};background:${v?'#001a10':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:var(--mono);color:${v?'var(--green)':'var(--muted)'}">${v}</div></div>`).join('<div style="color:var(--muted);font-size:16px;margin-top:16px">→</div>')+
+    `<div style="color:${ringMode==='ring'?'var(--green)':'var(--red)'};font-size:16px;margin-top:16px">${ringMode==='ring'?'↩Q':'↩Q̄'}</div></div>`;
+}
+function drawRingCanvas(){
+  const cv=document.getElementById('ringCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const labels=['Q0','Q1','Q2','Q3'];
+  const colors=['#00e5a0','#3b9eff','#b87cff','#ffb800'];
+  const n=ringHistory.length; const sx=50,ew=W-sx-20,rh=H/4;
+  labels.forEach((l,li)=>{
+    ctx.fillStyle=colors[li];ctx.font='bold 10px Space Mono,monospace';ctx.fillText(l,4,li*rh+rh*0.6);
+    ctx.strokeStyle=colors[li];ctx.lineWidth=2;ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x=sx+i*(ew/Math.max(n,10));
+      const v=ringHistory[i][li]; const y=li*rh+(v?rh*0.15:rh*0.78);
+      if(i===0){ctx.moveTo(x,y);}else{
+        const px=sx+(i-1)*(ew/Math.max(n,10));
+        const pv=ringHistory[i-1][li]; const py=li*rh+(pv?rh*0.15:rh*0.78);
+        ctx.lineTo(px,py);if(v!==pv)ctx.lineTo(px,y);ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+  });
+}
+
+// ---- BIDIREKCIONI ----
+let biDir=1, biRegs=[1,0,1,0], biHistory=[[1,0,1,0]], biStepCount=0;
+function updateDirBtn(){
+  const btn=document.getElementById('dirBtn');
+  btn.textContent=biDir===1?'DIR = 1 →':'DIR = 0 ←';
+  btn.style.background=biDir===1?'var(--green)':'var(--red)';
+}
+function biStep(){
+  const prev=[...biRegs];
+  let next;
+  if(biDir===1) next=[1,prev[0],prev[1],prev[2]]; // desno, SI=1
+  else next=[prev[1],prev[2],prev[3],1]; // lijevo, SI=1
+  biRegs=next;biHistory.push([...biRegs]);biStepCount++;
+  renderBiViz();drawBiCanvas();
+  document.getElementById('biExplain').innerHTML=
+    `Korak ${biStepCount}: DIR=${biDir} (pomak ${biDir===1?'→ desno':'← lijevo'}). Novo stanje: <strong style="color:var(--blue)">${biRegs.join('')}</strong>`;
+}
+function biReset(){biDir=1;biRegs=[1,0,1,0];biHistory=[[1,0,1,0]];biStepCount=0;updateDirBtn();renderBiViz();drawBiCanvas();document.getElementById('biExplain').innerHTML='Postavi DIR i pritisni Takt da vidiš pomak podataka.';}
+function renderBiViz(){
+  const d=document.getElementById('biViz'); if(!d)return;
+  const labels=['Q0','Q1','Q2','Q3'];
+  d.innerHTML='<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+    biRegs.map((v,i)=>`<div style="text-align:center"><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">${labels[i]}</div><div style="width:46px;height:46px;border-radius:8px;border:2px solid ${v?'var(--blue)':'var(--border)'};background:${v?'#001228':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;font-family:var(--mono);color:${v?'var(--blue)':'var(--muted)'}">${v}</div></div>`).join('<div style="color:var(--muted);font-size:16px;margin-top:18px">'+(biDir===1?'→':'←')+'</div>')+
+    `<div style="font-size:12px;color:${biDir?'var(--green)':'var(--red)'};margin-left:8px;margin-top:16px">DIR=${biDir}</div></div>`;
+}
+function drawBiCanvas(){
+  const cv=document.getElementById('biCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const labels=['Q0','Q1','Q2','Q3'];
+  const colors=['#00e5a0','#3b9eff','#b87cff','#ffb800'];
+  const n=biHistory.length; const sx=50,ew=W-sx-20,rh=H/4;
+  labels.forEach((l,li)=>{
+    ctx.fillStyle=colors[li];ctx.font='bold 10px Space Mono,monospace';ctx.fillText(l,4,li*rh+rh*0.6);
+    ctx.strokeStyle=colors[li];ctx.lineWidth=2;ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x=sx+i*(ew/Math.max(n,9));
+      const v=biHistory[i][li]; const y=li*rh+(v?rh*0.15:rh*0.78);
+      if(i===0){ctx.moveTo(x,y);}else{
+        const px=sx+(i-1)*(ew/Math.max(n,9));
+        const pv=biHistory[i-1][li]; const py=li*rh+(pv?rh*0.15:rh*0.78);
+        ctx.lineTo(px,py);if(v!==pv)ctx.lineTo(px,y);ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+  });
+}
+
+// ---- BINARNI BROJAČ ----
+let cntVal=0, cntDir=1, cntHistory=[0], cntAutoId=null;
+function updateCntDir(){
+  document.getElementById('cntDirBtn').textContent=cntDir?'▲ Naprijed':'▼ Nazad';
+  document.getElementById('cntDirBtn').style.background=cntDir?'var(--yellow)':'var(--purple)';
+}
+function cntStep(){
+  if(cntDir) cntVal=(cntVal+1)%16;
+  else cntVal=(cntVal+15)%16;
+  cntHistory.push(cntVal);
+  renderCntViz();drawCntCanvas();
+  const bits=cntVal.toString(2).padStart(4,'0');
+  document.getElementById('cntExplain').innerHTML=
+    `Takt ${cntHistory.length-1}: ${cntDir?'▲':'▼'} → <strong style="color:var(--yellow)">${cntVal}</strong> (binarno: <span style="font-family:var(--mono)">${bits}</span>)`;
+}
+function cntAuto(){
+  if(cntAutoId){clearInterval(cntAutoId);cntAutoId=null;return;}
+  cntAutoId=setInterval(()=>{cntStep();if(cntHistory.length>17){clearInterval(cntAutoId);cntAutoId=null;}},300);
+}
+function cntReset(){clearInterval(cntAutoId);cntAutoId=null;cntVal=0;cntHistory=[0];renderCntViz();drawCntCanvas();document.getElementById('cntExplain').innerHTML='Pritisni <strong>Takt impulsa</strong> ili <strong>Auto</strong> da pokreneš brojač.';}
+function renderCntViz(){
+  const d=document.getElementById('cntViz'); if(!d)return;
+  const bits=cntVal.toString(2).padStart(4,'0').split('').reverse();
+  const labels=['Q0(1)','Q1(2)','Q2(4)','Q3(8)'];
+  d.innerHTML=bits.map((v,i)=>`<div style="text-align:center"><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">${labels[i]}</div><div style="width:52px;height:52px;border-radius:8px;border:2px solid ${v==='1'?'var(--yellow)':'var(--border)'};background:${v==='1'?'#2a1d00':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;font-family:var(--mono);color:${v==='1'?'var(--yellow)':'var(--muted)'}">${v}</div></div>`).join('')+
+    `<div style="align-self:center;margin-left:8px"><div style="font-size:11px;color:var(--muted)">Decimalno</div><div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--yellow)">${cntVal}</div></div>`;
+}
+function drawCntCanvas(){
+  const cv=document.getElementById('cntCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const labels=['Q0','Q1','Q2','Q3'];
+  const colors=['#00e5a0','#3b9eff','#b87cff','#ffb800'];
+  const n=cntHistory.length; const sx=50,ew=W-sx-20,rh=H/4;
+  labels.forEach((l,li)=>{
+    ctx.fillStyle=colors[li];ctx.font='bold 10px Space Mono,monospace';ctx.fillText(l,4,li*rh+rh*0.6);
+    ctx.strokeStyle=colors[li];ctx.lineWidth=2;ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x=sx+i*(ew/Math.max(n,9));
+      const v=(cntHistory[i]>>li)&1; const y=li*rh+(v?rh*0.15:rh*0.78);
+      if(i===0){ctx.moveTo(x,y);}else{
+        const px=sx+(i-1)*(ew/Math.max(n,9));
+        const pv=(cntHistory[i-1]>>li)&1; const py=li*rh+(pv?rh*0.15:rh*0.78);
+        ctx.lineTo(px,py);if(v!==pv)ctx.lineTo(px,y);ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+  });
+  // Number labels
+  if(n>1){
+    cntHistory.forEach((v,i)=>{
+      if(i===0)return;
+      const x=sx+(i-0.5)*(ew/Math.max(n,9));
+      ctx.fillStyle='#4a607a';ctx.font='9px Space Mono,monospace';
+      ctx.fillText(v,x-4,H-4);
+    });
+  }
+}
+
+// ---- DEKADNI / MODUL N ----
+function updateModCalc(v){
+  v=parseInt(v);
+  document.getElementById('modVal').textContent=v;
+  const nFF=Math.ceil(Math.log2(v+1));
+  const binV=v.toString(2);
+  const ones=[...binV].map((b,i)=>b==='1'?Math.pow(2,binV.length-1-i):0).filter(x=>x>0);
+  document.getElementById('modResult').innerHTML=
+    `<span style="color:var(--purple)">Modul ${v}:</span> broji od 0 do <strong>${v-1}</strong><br>`+
+    `<span style="color:var(--yellow)">Broj FF-ova:</span> <strong>${nFF}</strong> (jer 2<sup>${nFF}</sup>=${Math.pow(2,nFF)} ≥ ${v})<br>`+
+    `<span style="color:var(--blue)">Binarna kombinacija reseta (${v}):</span> <strong style="font-family:var(--mono)">${binV}</strong><br>`+
+    `<span style="color:var(--red)">NI kolo ulazi (jedinice u ${binV}):</span> <strong>${ones.map(x=>'Q'+Math.log2(x).toFixed(0)+' ('+x+')').join(', ')}</strong>`;
+  drawModCanvas(v,nFF);
+}
+function drawModCanvas(mod,nFF){
+  const cv=document.getElementById('modCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const sx=30,ew=W-sx-20,step=ew/mod;
+  // Draw count sequence
+  ctx.strokeStyle='#3b9eff';ctx.lineWidth=2;ctx.beginPath();
+  for(let i=0;i<=mod;i++){
+    const x=sx+i*step, y=H-20-(i%mod)*((H-40)/Math.max(mod-1,1));
+    if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    ctx.fillStyle='#3b9eff';ctx.font='8px Space Mono,monospace';
+    if(i<mod) ctx.fillText(i,x-4,y-5);
+  }
+  ctx.stroke();
+  // Reset line
+  const rx=sx+(mod)*step;
+  ctx.strokeStyle='#ff4757';ctx.lineWidth=2;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(rx,H-20);ctx.lineTo(rx,20);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#ff4757';ctx.font='bold 9px Space Mono,monospace';
+  ctx.fillText('RESET',rx-24,15);
+  // x axis
+  ctx.strokeStyle='#1e2d45';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(sx,H-20);ctx.lineTo(W,H-20);ctx.stroke();
+  ctx.fillStyle='#4a607a';ctx.font='9px Space Mono,monospace';
+  ctx.fillText('takt →',W-45,H-5);
+}
+
+// ---- SEKVENCIJALNA MREŽA ----
+const seqMap={5:7,7:3,3:4,4:6,6:0,0:1,1:2,2:5};
+let seqCurrent=5, seqHistory=[5];
+function seqStep(){
+  seqCurrent=seqMap[seqCurrent];
+  seqHistory.push(seqCurrent);
+  renderSeqViz();drawSeqCanvas();
+  const bits=seqCurrent.toString(2).padStart(3,'0');
+  document.getElementById('seqExplain').innerHTML=
+    `Novo stanje: <strong style="color:var(--purple)">${seqCurrent}</strong> (binarno: <span style="font-family:var(--mono);color:var(--purple)">${bits}</span>). Sljedeće → ${seqMap[seqCurrent]}`;
+}
+function seqReset(){seqCurrent=5;seqHistory=[5];renderSeqViz();drawSeqCanvas();document.getElementById('seqExplain').innerHTML='Sekvenca: <strong>5→7→3→4→6→0→1→2→5...</strong> Pritisni Sljedeće stanje.';}
+function renderSeqViz(){
+  const d=document.getElementById('seqViz'); if(!d)return;
+  const bits=seqCurrent.toString(2).padStart(3,'0').split('').reverse();
+  const labels=['Q0','Q1','Q2'];
+  d.innerHTML=`<span style="font-size:13px;font-weight:600;color:var(--purple);font-family:var(--mono);margin-right:8px">Stanje: ${seqCurrent}</span>`+
+    bits.map((v,i)=>`<div style="text-align:center"><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">${labels[i]}</div><div style="width:40px;height:40px;border-radius:8px;border:2px solid ${v==='1'?'var(--purple)':'var(--border)'};background:${v==='1'?'#1a0d2e':'var(--bg3)'};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;font-family:var(--mono);color:${v==='1'?'var(--purple)':'var(--muted)'}">${v}</div></div>`).join('')+
+    `<span style="align-self:center;margin-left:10px;font-size:20px;color:var(--muted)">→ ${seqMap[seqCurrent]}</span>`;
+}
+function drawSeqCanvas(){
+  const cv=document.getElementById('seqCanvas'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height;
+  ctx.fillStyle='#050810';ctx.fillRect(0,0,W,H);
+  const labels=['Q0','Q1','Q2'];
+  const colors=['#00e5a0','#3b9eff','#b87cff'];
+  const n=seqHistory.length; const sx=50,ew=W-sx-20,rh=H/3;
+  labels.forEach((l,li)=>{
+    ctx.fillStyle=colors[li];ctx.font='bold 10px Space Mono,monospace';ctx.fillText(l,4,li*rh+rh*0.6);
+    ctx.strokeStyle=colors[li];ctx.lineWidth=2;ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x=sx+i*(ew/Math.max(n,9));
+      const v=(seqHistory[i]>>li)&1; const y=li*rh+(v?rh*0.15:rh*0.78);
+      if(i===0){ctx.moveTo(x,y);}else{
+        const px=sx+(i-1)*(ew/Math.max(n,9));
+        const pv=(seqHistory[i-1]>>li)&1; const py=li*rh+(pv?rh*0.15:rh*0.78);
+        ctx.lineTo(px,py);if(v!==pv)ctx.lineTo(px,y);ctx.lineTo(x,y);
+      }
+    }
+    ctx.stroke();
+    for(let i=0;i<n;i++){
+      const x=sx+i*(ew/Math.max(n,9));
+      ctx.fillStyle='#4a607a';ctx.font='9px Space Mono,monospace';
+      ctx.fillText(seqHistory[i],x-4,H-4);
+    }
+  });
+}
+
+// Init all canvases on page load
+window.addEventListener('load',()=>{
+  drawStaticAst();
+  drawMonoCanvas();
+  statReset(); renderShiftViz(); drawShiftCanvas();
+  renderRingViz(); drawRingCanvas();
+  renderBiViz(); drawBiCanvas();
+  renderCntViz(); drawCntCanvas();
+  updateModCalc(10);
+  renderSeqViz(); drawSeqCanvas();
+});
+</script>
+</body>
+</html>
