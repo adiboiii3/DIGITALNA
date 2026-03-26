@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nora — Interaktivni Vodič za Lektiru</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0c0a;
+    --bg2: #151210;
+    --bg3: #1c1916;
+    --card: #1f1c18;
+    --border: rgba(255,255,255,0.07);
+    --gold: #c9a96e;
+    --gold2: #e8c98a;
+    --cream: #f0e8d8;
+    --muted: #7a7268;
+    --accent: #b85c3a;
+    --accent2: #d97b55;
+    --green: #4a7c5f;
+    --green2: #6aad83;
+    --text: #e8e0d4;
+    --text2: #a89f94;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(201,169,110,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 80%, rgba(184,92,58,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .stage-lines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(255,255,255,0.015) 60px);
+    pointer-events: none;
+  }
+  .hero-year { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; opacity: 0; animation: fadeUp 0.8s ease 0.2s forwards; margin-bottom: 20px; }
+  .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(72px, 15vw, 140px); font-weight: 900; line-height: 0.9; color: var(--cream); letter-spacing: -3px; opacity: 0; animation: fadeUp 1s ease 0.4s forwards; margin-bottom: 10px; }
+  .hero-title em { display: block; font-style: italic; color: var(--gold); font-size: 0.65em; letter-spacing: -1px; }
+  .hero-subtitle { font-family: 'Playfair Display', serif; font-style: italic; font-size: 18px; color: var(--text2); opacity: 0; animation: fadeUp 1s ease 0.6s forwards; margin-bottom: 48px; }
+  .hero-desc { max-width: 560px; font-size: 15px; color: var(--text2); line-height: 1.8; opacity: 0; animation: fadeUp 1s ease 0.8s forwards; margin-bottom: 48px; }
+  .nav-pills { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; opacity: 0; animation: fadeUp 1s ease 1s forwards; }
+  .nav-pill { background: var(--card); border: 1px solid var(--border); color: var(--text2); padding: 10px 20px; border-radius: 99px; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: all 0.2s; text-decoration: none; display: inline-block; }
+  .nav-pill:hover, .nav-pill.active { background: var(--gold); border-color: var(--gold); color: #1a1510; font-weight: 500; }
+  .scroll-hint { position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%); font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; opacity: 0; animation: fadeUp 1s ease 1.4s forwards; }
+  .scroll-hint::after { content: ''; display: block; width: 1px; height: 40px; background: linear-gradient(to bottom, var(--muted), transparent); margin: 8px auto 0; animation: pulse 2s ease infinite; }
+  .section { max-width: 900px; margin: 0 auto; padding: 80px 24px; display: none; }
+  .section.active { display: block; }
+  .section-label { font-size: 10px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(32px, 5vw, 52px); font-weight: 700; color: var(--cream); line-height: 1.1; margin-bottom: 32px; }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .prose { font-size: 15px; color: var(--text2); line-height: 1.85; margin-bottom: 24px; }
+  .prose strong { color: var(--text); font-weight: 500; }
+  .divider { width: 60px; height: 1px; background: var(--gold); opacity: 0.4; margin: 32px 0; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 24px 0; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover { border-color: rgba(201,169,110,0.3); transform: translateY(-2px); }
+  .card-icon { font-size: 24px; margin-bottom: 12px; }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--cream); margin-bottom: 8px; }
+  .card-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .char-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+  .char-tab { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .char-tab:hover, .char-tab.active { background: var(--card); border-color: var(--gold); color: var(--gold); }
+  .char-profile { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; animation: fadeIn 0.3s ease; }
+  .char-profile.active { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .char-name-big { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 900; color: var(--cream); margin-bottom: 4px; }
+  .char-role { font-size: 12px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 16px; }
+  .char-trait { display: inline-block; background: rgba(201,169,110,0.1); border: 1px solid rgba(201,169,110,0.2); color: var(--gold2); padding: 3px 10px; border-radius: 99px; font-size: 11px; margin: 2px; }
+  .char-quote { font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; color: var(--text2); border-left: 2px solid var(--gold); padding-left: 16px; margin: 20px 0; line-height: 1.6; }
+  .char-analysis-title { font-size: 11px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; margin-top: 20px; }
+  .timeline { position: relative; padding-left: 40px; }
+  .timeline::before { content: ''; position: absolute; left: 12px; top: 0; bottom: 0; width: 1px; background: linear-gradient(to bottom, var(--gold), var(--accent), transparent); opacity: 0.3; }
+  .timeline-item { position: relative; margin-bottom: 40px; }
+  .timeline-dot { position: absolute; left: -34px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--gold); border: 2px solid var(--bg); box-shadow: 0 0 0 3px rgba(201,169,110,0.2); }
+  .timeline-act { font-size: 10px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
+  .timeline-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--cream); margin-bottom: 12px; }
+  .timeline-text { font-size: 14px; color: var(--text2); line-height: 1.8; }
+  .timeline-events { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .event-item { background: var(--bg3); border-left: 2px solid var(--accent); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 13px; color: var(--text2); }
+  .event-item strong { color: var(--text); font-weight: 500; }
+  .theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .theme-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; position: relative; overflow: hidden; cursor: pointer; transition: all 0.25s; }
+  .theme-box:hover { transform: translateY(-3px); border-color: rgba(201,169,110,0.4); }
+  .theme-box::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; }
+  .theme-box.t1::after { background: linear-gradient(to right, var(--gold), var(--gold2)); }
+  .theme-box.t2::after { background: linear-gradient(to right, var(--accent), var(--accent2)); }
+  .theme-box.t3::after { background: linear-gradient(to right, var(--green), var(--green2)); }
+  .theme-box.t4::after { background: linear-gradient(to right, #8b6ab5, #b594d4); }
+  .theme-box.t5::after { background: linear-gradient(to right, #4a7d8f, #6aafc2); }
+  .theme-box.t6::after { background: linear-gradient(to right, #8f6a4a, #c29b6a); }
+  .theme-number { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; color: rgba(255,255,255,0.04); position: absolute; top: 8px; right: 16px; line-height: 1; }
+  .theme-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--cream); margin-bottom: 10px; }
+  .theme-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .theme-expand { display: none; margin-top: 14px; font-size: 13px; color: var(--text2); line-height: 1.7; border-top: 1px solid var(--border); padding-top: 14px; animation: fadeIn 0.3s ease; }
+  .theme-box.open .theme-expand { display: block; }
+  .toggle-hint { font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .analysis-block { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 20px; }
+  .analysis-tag { display: inline-block; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; margin-bottom: 14px; font-weight: 500; }
+  .tag-gold { background: rgba(201,169,110,0.15); color: var(--gold); }
+  .tag-red { background: rgba(184,92,58,0.15); color: var(--accent2); }
+  .tag-green { background: rgba(74,124,95,0.15); color: var(--green2); }
+  .tag-purple { background: rgba(139,106,181,0.15); color: #b594d4; }
+  .analysis-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--cream); margin-bottom: 12px; }
+  .highlight-quote { background: rgba(201,169,110,0.06); border: 1px solid rgba(201,169,110,0.15); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; padding: 16px 20px; margin: 16px 0; font-family: 'Playfair Display', serif; font-style: italic; font-size: 16px; color: var(--text); line-height: 1.6; }
+  .highlight-quote span { display: block; font-family: 'DM Sans', sans-serif; font-style: normal; font-size: 11px; color: var(--muted); margin-top: 8px; letter-spacing: 2px; text-transform: uppercase; }
+  .quiz-q { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; }
+  .quiz-question { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--cream); margin-bottom: 16px; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-option { background: var(--bg3); border: 1px solid var(--border); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 14px; color: var(--text2); transition: all 0.2s; text-align: left; font-family: 'DM Sans', sans-serif; }
+  .quiz-option:hover { border-color: var(--gold); color: var(--text); }
+  .quiz-option.correct { background: rgba(74,124,95,0.2); border-color: var(--green2); color: var(--green2); }
+  .quiz-option.wrong { background: rgba(184,92,58,0.2); border-color: var(--accent); color: var(--accent2); }
+  .quiz-feedback { display: none; margin-top: 12px; padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.6; }
+  .quiz-feedback.show { display: block; animation: fadeIn 0.3s ease; }
+  .quiz-feedback.correct { background: rgba(74,124,95,0.1); color: var(--green2); border: 1px solid rgba(106,173,131,0.2); }
+  .quiz-feedback.wrong { background: rgba(184,92,58,0.1); color: var(--accent2); border: 1px solid rgba(217,123,85,0.2); }
+  .symbol-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 24px 0; }
+  .symbol-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .symbol-icon { font-size: 36px; margin-bottom: 12px; }
+  .symbol-name { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--cream); margin-bottom: 8px; }
+  .symbol-meaning { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .sticky-nav { position: fixed; top: 0; left: 0; right: 0; background: rgba(14,12,10,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 100; padding: 12px 24px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; transform: translateY(-100%); transition: transform 0.3s ease; }
+  .sticky-nav.visible { transform: translateY(0); }
+  .sticky-logo { font-family: 'Playfair Display', serif; font-style: italic; font-size: 18px; color: var(--gold); margin-right: 16px; }
+  .sticky-btn { background: none; border: none; color: var(--text2); font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; padding: 5px 12px; border-radius: 6px; transition: all 0.2s; }
+  .sticky-btn:hover, .sticky-btn.active { background: rgba(201,169,110,0.1); color: var(--gold); }
+  .score-badge { background: rgba(201,169,110,0.1); border: 1px solid rgba(201,169,110,0.2); color: var(--gold); padding: 4px 14px; border-radius: 99px; font-size: 13px; margin-left: auto; }
+  .info-box { background: rgba(201,169,110,0.05); border: 1px solid rgba(201,169,110,0.15); border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+  .info-box-title { font-size: 11px; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; }
+  .context-box { background: rgba(184,92,58,0.06); border: 1px solid rgba(184,92,58,0.15); border-radius: 10px; padding: 20px 24px; margin: 20px 0; }
+  .context-box-title { font-size: 11px; letter-spacing: 3px; color: var(--accent2); text-transform: uppercase; margin-bottom: 8px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 20px 0; }
+  .progress-bar { position: fixed; top: 0; left: 0; height: 2px; background: var(--gold); z-index: 200; transition: width 0.1s linear; width: 0%; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+  @media (max-width: 600px) {
+    .char-profile.active { grid-template-columns: 1fr; }
+    .hero-title { font-size: 72px; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav class="sticky-nav" id="stickyNav">
+  <span class="sticky-logo">Nora</span>
+  <button class="sticky-btn" onclick="showSection('kontekst')">Kontekst</button>
+  <button class="sticky-btn" onclick="showSection('likovi')">Likovi</button>
+  <button class="sticky-btn" onclick="showSection('radnja')">Radnja</button>
+  <button class="sticky-btn" onclick="showSection('teme')">Teme</button>
+  <button class="sticky-btn" onclick="showSection('analiza')">Analiza</button>
+  <button class="sticky-btn" onclick="showSection('simboli')">Simboli</button>
+  <button class="sticky-btn" onclick="showSection('kviz')">Kviz</button>
+  <span class="score-badge" id="scoreDisplay">0 / 0</span>
+</nav>
+
+<section class="hero" id="heroSection">
+  <div class="stage-lines"></div>
+  <div class="hero-year">Henrik Ibsen · 1879 · Drama u tri čina</div>
+  <h1 class="hero-title">Nora<em>Kuća Lutkica</em></h1>
+  <p class="hero-subtitle">Et dukkehjem — originalni norveški naslov</p>
+  <p class="hero-desc">Potpuni interaktivni vodič za lektiru. Sve što trebaš znati — kontekst, likovi, radnja, teme, analiza i simbolika.</p>
+  <div class="nav-pills">
+    <span class="nav-pill" onclick="showSection('kontekst')">📜 Kontekst</span>
+    <span class="nav-pill" onclick="showSection('likovi')">🎭 Likovi</span>
+    <span class="nav-pill" onclick="showSection('radnja')">📖 Radnja</span>
+    <span class="nav-pill" onclick="showSection('teme')">💡 Teme</span>
+    <span class="nav-pill" onclick="showSection('analiza')">🔍 Analiza</span>
+    <span class="nav-pill" onclick="showSection('simboli')">🔑 Simboli</span>
+    <span class="nav-pill" onclick="showSection('kviz')">✍️ Kviz</span>
+  </div>
+  <div class="scroll-hint">Odaberi poglavlje</div>
+</section>
+
+<!-- KONTEKST -->
+<section class="section" id="kontekst">
+  <div class="section-label">Poglavlje 01</div>
+  <h2 class="section-title">Historijski <em>kontekst</em></h2>
+  <p class="prose">Da bi razumio/razumjela <em>Noru</em>, moraš znati u kakvom je svijetu nastala. Ibsen ju je napisao 1879. u Norveškoj, u doba kada je žena bila pravno gotovo beskorisna kao samostalna osoba. Ova drama eksplodirala je poput bombe u tadašnjem društvu.</p>
+  <div class="info-box">
+    <div class="info-box-title">Ko je Henrik Ibsen?</div>
+    <p class="prose" style="margin:0">Ibsen (1828–1906) je norveški dramatičar kojeg mnogi smatraju "ocem moderne drame." Pisao je realističke drame koje su razarale licemerje buržoaskog društva. Uz Noru, najpoznatija mu je drama <em>Hedda Gabler</em> (1890). Noru je napisao dok je živio u egzilu u Italiji i Njemačkoj — daleko od norveške konzervativnosti.</p>
+  </div>
+  <div class="divider"></div>
+  <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--cream);margin-bottom:16px">Položaj žene u 19. vijeku</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">⚖️</div>
+      <div class="card-title">Pravni status</div>
+      <div class="card-text">Žena u Norveškoj 1879. nije mogla potpisati ugovor ni uzeti zajam bez dozvole muža ili oca. Sva imovina bila je muška. Ovo je ključno za razumijevanje Norinog "zločina" u drami.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏠</div>
+      <div class="card-title">Uloga u domu</div>
+      <div class="card-text">Žena je trebala biti savršena majka, domaćica i ukras muževog društvenog statusa. Jedini njen "posao" bio je da bude lijepa, vesela i poslušna — kao lutka u kući.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📰</div>
+      <div class="card-title">Skandal koji je izazvala</div>
+      <div class="card-text">Kada je Nora prasnula 1879, publika je bila šokirana. U Njemačkoj su inscenatori bez Ibsenove dozvole promijenili kraj da Nora ostane — Ibsen je bio bijesan i osudio to kao "barbarstvo."</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌍</div>
+      <div class="card-title">Globalni utjecaj</div>
+      <div class="card-text">Drama je postala himna feminizma i emancipacije žene širom Evrope. Diskutuje se i danas jer teme nisu zastarjele. "Norina vrata" — zvuk njenog odlaska — još uvijek odjekuje.</div>
+    </div>
+  </div>
+  <div class="context-box">
+    <div class="context-box-title">Važna napomena</div>
+    <p class="prose" style="margin:0">Ibsen je ironično tvrdio da nije pisao feministički manifest — rekao je da je pisao o <strong>ljudskim pravima uopće</strong>. No efekt je bio isti: drama je pokrenula burne rasprave o braku, slobodi i individualnosti koje traju do danas.</p>
+  </div>
+  <div class="divider"></div>
+  <h3 style="font-family:'Playfair Display',serif;font-size:22px;color:var(--cream);margin-bottom:16px">Ibsenov realizam</h3>
+  <p class="prose">Ibsen je bio pionir <strong>naturalizma i realizma u drami</strong>. Dok su tadašnje drame bile pune romantičnih junaka, Ibsen je pisao o običnim buržoaskim porodicama u modernim stanovima. Nema vitezova — samo čovjek, žena i tajne iza lijepih salona. Koristi tehniku <strong>"retrospektivne analize"</strong>: drama počinje skoro na kraju, a prošlost se polako razotkriva kroz dijaloge.</p>
+  <div style="text-align:center;margin-top:40px">
+    <span class="nav-pill" onclick="showSection('likovi')" style="font-size:14px;padding:12px 28px">Sljedeće: Likovi →</span>
+  </div>
+</section>
+
+<!-- LIKOVI -->
+<section class="section" id="likovi">
+  <div class="section-label">Poglavlje 02</div>
+  <h2 class="section-title">Likovi i <em>karakterizacija</em></h2>
+  <p class="prose">Ibsenovi likovi su izuzetno kompleksni — nitko nije samo "dobar" ili "loš". Svaki lik nosi teret društvenih normi, tajni i kompromisa. Klikni na ime lika da vidiš detaljnu analizu.</p>
+  <div class="char-tabs">
+    <button class="char-tab active" onclick="showChar(event,'nora')">Nora Helmer</button>
+    <button class="char-tab" onclick="showChar(event,'torvald')">Torvald Helmer</button>
+    <button class="char-tab" onclick="showChar(event,'krogstad')">Nils Krogstad</button>
+    <button class="char-tab" onclick="showChar(event,'linde')">Gospa Linde</button>
+    <button class="char-tab" onclick="showChar(event,'rank')">Dr. Rank</button>
+  </div>
+  <div class="char-profile active" id="char-nora">
+    <div>
+      <div class="char-name-big">Nora</div>
+      <div class="char-role">Protagonistica · Supruga · Majka · Slobodna duša</div>
+      <div><span class="char-trait">Inteligentna</span><span class="char-trait">Hrabra</span><span class="char-trait">Naivna → Probuđena</span><span class="char-trait">Samožrtvujuća</span></div>
+      <div class="char-quote">"Imam obaveze prema sebi koje su jednako svete kao i prema tebi i djeci."</div>
+      <div class="char-analysis-title">Razvoj lika</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Nora je najkompleksniji ženski lik u historiji drame do tada. Na početku izgleda kao vesela, lakomislena "ptičica" — ali to je maska. Ispod nje krije se žena koja je godinama tajno radila i štedila da vrati dug. Njen razvoj ide od <strong style="color:var(--text)">ovisnosti</strong> do <strong style="color:var(--text)">samospoznaje</strong> kroz tri faze: naivnost → strah → oslobođenje.</p>
+    </div>
+    <div>
+      <div class="char-analysis-title">Psihološka analiza</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">Nora je odrasla pod kontrolom oca, a zatim prešla direktno pod kontrolu muža. Nikada nije imala prostor da otkrije ko zapravo jeste. Ona to eksplicitno kaže na kraju: <em>"Nisam bila ništa do lutka u vašim rukama."</em></p>
+      <div class="char-analysis-title">Ključni momenat transformacije</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Kada Torvald napada Noru zbog pisma — umjesto da je zaštiti — ona shvata istinu o braku. Nije se bojala kazne; bojala se da muž ne vidi ko je ona. Kada je vidjela ko on jeste, odlučila je otići.</p>
+    </div>
+  </div>
+  <div class="char-profile" id="char-torvald">
+    <div>
+      <div class="char-name-big">Torvald</div>
+      <div class="char-role">Muž · Advokat · Direktor banke · Patrijarh</div>
+      <div><span class="char-trait">Paternalistički</span><span class="char-trait">Samoljubiv</span><span class="char-trait">Konvencionalan</span><span class="char-trait">Površan</span></div>
+      <div class="char-quote">"Nisi li ti sretna ovdje? Nisam li se uvijek brinuo o tebi?"</div>
+      <div class="char-analysis-title">Tip lika</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Torvald nije klasični "negativac" — on je <strong style="color:var(--text)">produkt svog vremena</strong>. Iskreno misli da voli Noru, ali je voli kao <em>predmet</em> — kao svoju ptičicu, vjeveričicu, lutku. Zbunjen je kada ona traži da je tretira kao ravnopravnu osobu jer mu to nikada nije palo na pamet.</p>
+    </div>
+    <div>
+      <div class="char-analysis-title">Prava narav se otkriva u krizi</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">Kada čita Krogstadovo pismo, prva reakcija nije "kako da zaštitim ženu" — nego "ovo će uništiti moju reputaciju." Tu Ibsen demaskira patrijarhat: nije ljubav, nego vlasništvo.</p>
+      <div class="char-analysis-title">Simbolična uloga</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Torvald simbolizuje <strong style="color:var(--text)">cijeli patrijarhatski sistem</strong> — ne samo jednog lošeg čovjeka, nego mentalitet koji cijelo društvo drži na djelu.</p>
+    </div>
+  </div>
+  <div class="char-profile" id="char-krogstad">
+    <div>
+      <div class="char-name-big">Krogstad</div>
+      <div class="char-role">Ucjenjivač · Ranjeni čovjek · Anti-heroj</div>
+      <div><span class="char-trait">Ambiciozan</span><span class="char-trait">Očajan</span><span class="char-trait">Moralno sumnjiv</span><span class="char-trait">Na kraju: pokajan</span></div>
+      <div class="char-quote">"I ja sam bio na rubu propasti — i spasio sam se. Bez ikakve pomoći."</div>
+      <div class="char-analysis-title">Paralelizam s Norom</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Krogstad je <strong style="color:var(--text)">zrcalo Nore</strong>. I on je krivotvorenjem potpisa spasio nekoga koga voli — i za to je uništen. Ibsen pita: zašto je Nora simpatičnija od njega? Odgovor je u rodnoj asimetriji — isti grijeh, drugačija kazna.</p>
+    </div>
+    <div>
+      <div class="char-analysis-title">Njegova transformacija</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">Na kraju se kroz ljubav prema Kristine vraća nečemu humanijem — poništava ucjenu. Ovo je jedina prava, ravnopravna ljubavna priča u drami.</p>
+      <div class="char-analysis-title">Zašto ga Torvald otpušta?</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Torvald želi da se distancira od Krogstada jer ga smeta što ga Krogstad oslovljava imenom iz djetinjstva — sitna ego-borba koja ima katastrofalne posljedice.</p>
+    </div>
+  </div>
+  <div class="char-profile" id="char-linde">
+    <div>
+      <div class="char-name-big">Gospa Linde</div>
+      <div class="char-role">Kristine Linde · Norina prijateljica · Kontrast</div>
+      <div><span class="char-trait">Pragmatična</span><span class="char-trait">Neovisna</span><span class="char-trait">Iskusna</span><span class="char-trait">Empatična</span></div>
+      <div class="char-quote">"Žena koja je sama na svijetu mora tražiti put sama."</div>
+      <div class="char-analysis-title">Kontrastni lik</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Gospa Linde je <strong style="color:var(--text)">namjerni kontrast Nori</strong>. Dok je Nora živjela u zlatnom kavezu, Kristine je morala raditi i biti neovisna. Ibsen kroz nju pokazuje kako izgleda žena koja <em>zaista</em> funkcioniše samostalno.</p>
+    </div>
+    <div>
+      <div class="char-analysis-title">Ključna odluka u drami</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">Kristine namjerno <strong style="color:var(--text)">ne spriječava</strong> da Torvald pročita pismo — smatra da Helmerovi moraju suočiti se s istinom. Ova odluka pokreće cijeli rasplet.</p>
+      <div class="char-analysis-title">Simbolična uloga</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Njeno sjedinjenje s Krogstadom na kraju je suprotnost Norinom odlasku: dok Nora napušta vezu, Kristine ulazi u novu — slobodnu i ravnopravnu.</p>
+    </div>
+  </div>
+  <div class="char-profile" id="char-rank">
+    <div>
+      <div class="char-name-big">Dr. Rank</div>
+      <div class="char-role">Prijatelj porodice · Bolesni čovjek · Tajni ljubavnik</div>
+      <div><span class="char-trait">Inteligentan</span><span class="char-trait">Moralan</span><span class="char-trait">Dostojanstven</span><span class="char-trait">Žrtvovan</span></div>
+      <div class="char-quote">"Morat ću umrijeti od grijeha svog oca — koji nije ni moj."</div>
+      <div class="char-analysis-title">Simbolična funkcija</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Dr. Rank je smrtno bolestan — naslijedio je sifilis od razuzdanog oca. Ibsen ga koristi kao <strong style="color:var(--text)">simbol moralnog truljenja</strong> koje se prenosi s generacije na generaciju.</p>
+    </div>
+    <div>
+      <div class="char-analysis-title">Tajna ljubav prema Nori</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:12px">Rank voli Noru iskreno — on je jedina osoba koja je zaista <em>vidi</em> kao osobu. Kad joj to prizna, Nora ga zatvori jer to komplikuje njen plan. Tragična ironija: jedini koji je razumije, ne može joj pomoći.</p>
+      <div class="char-analysis-title">Dostojanstven odlazak</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">Rank odlazi umrijeti u samoći — šalje Nori karticu s crnim križem. Paralelno s Norom — oboje na kraju napuštaju porodicu Helmer, svako na svoj način.</p>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <span class="nav-pill" onclick="showSection('radnja')" style="font-size:14px;padding:12px 28px">Sljedeće: Radnja →</span>
+  </div>
+</section>
+
+<!-- RADNJA -->
+<section class="section" id="radnja">
+  <div class="section-label">Poglavlje 03</div>
+  <h2 class="section-title">Detaljna <em>radnja</em></h2>
+  <p class="prose">Drama se odvija u salonu stana Helmerovih tokom <strong>Božića</strong> — što nije slučajno. Sve se dešava u svega <strong>tri dana</strong>. Evo hronologije svakog čina u detalju.</p>
+  <div class="context-box">
+    <div class="context-box-title">Pozadinska priča (ekspozicija)</div>
+    <p class="prose" style="margin:0">Prije nego drama počne: Torvald je bio teško bolestan i doktori su preporučili topliju klimu. Nora je potajno uzela zajam od Krogstada i <strong>falsificirala potpis svog mrtvorođenog oca</strong> kao garanciju — to je krivično djelo. Torvald nije nikad znao. Nora je godinama vraćala dug iz kućnog budžeta i tajnih zarada. Drama počinje kada Torvald postaje direktor banke i otkaze Krogstadu — i Krogstad odlučuje ucjenom zaštititi radno mjesto.</p>
+  </div>
+  <div class="divider"></div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-act">Čin I · Dan prvi</div>
+      <div class="timeline-title">Božićni sklad i prva prijetnja</div>
+      <div class="timeline-text">Nora se vraća s kupovine, vesela i puna energije. Torvald je mazi i zove "ptičicom." Sve izgleda idilično.</div>
+      <div class="timeline-events">
+        <div class="event-item"><strong>Dolazak Gospe Linde:</strong> Stara Norina prijateljica dolazi tražeći posao. Nora joj povjerava svoju tajnu o zajmu — prvi put vidimo pravi Norin karakter ispod vesele maske.</div>
+        <div class="event-item"><strong>Dolazak Krogstada:</strong> Krogstad dolazi da porazgovara s Torvaldom o svom poslu. Nora sazna da ga Torvald želi otpustiti i počinje paničiti.</div>
+        <div class="event-item"><strong>Prva ucjena:</strong> Krogstad upozorava Noru da ima dokaze o krivotvorenju i da će ih iskoristiti ako izgubi radno mjesto. Nora se uzda da može sve riješiti.</div>
+        <div class="event-item"><strong>Dr. Rank:</strong> Rank spominje da je smrtno bolestan ali prihvata to mirno — prva naznaka teme moralnog naslijeđa.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--accent)"></div>
+      <div class="timeline-act">Čin II · Dan drugi</div>
+      <div class="timeline-title">Napetost, ucjena i ples</div>
+      <div class="timeline-text">Nora paničari. Pokušava sve — od molbi do obmana — da zaustavi katastrofu.</div>
+      <div class="timeline-events">
+        <div class="event-item"><strong>Nora moli Torvaldija:</strong> Pokušava nagovoriti muža da ostavi Krogstada na poslu — Torvald odbija zbog ličnog ponosa.</div>
+        <div class="event-item"><strong>Pismo u sandučetu:</strong> Krogstad šalje pismo s detaljima Norinog krivičnog djela. Nora zna da je tu — Torvald još ne. Ona se trudi odgoditi čitanje po svaku cijenu.</div>
+        <div class="event-item"><strong>Rankova ispovijest:</strong> Dr. Rank Nori prizna da je voli. Nora mu zatvara vrata — sada ne može od njega tražiti novac. Tragični momenat.</div>
+        <div class="event-item"><strong>Tarantela:</strong> Nora pleše tarantelu — mediteranski ples spasenja od otrovne tarantule. Ona pleše divlje i očajnički. Ovo je jedan od najsnažnijih simboličnih momenata drame.</div>
+        <div class="event-item"><strong>Nora razmišlja o samoubistvu:</strong> Razmatra da se ubaci u rijeku kako bi zaštitila porodicu. Još uvijek misli na druge, ne na sebe.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background:var(--accent)"></div>
+      <div class="timeline-act">Čin III · Dan treći</div>
+      <div class="timeline-title">Razotkrivanje i odlazak</div>
+      <div class="timeline-text">Klimaks i rasplet. Sve tajne izlaze na vidjelo. Nora doživljava totalnu transformaciju.</div>
+      <div class="timeline-events">
+        <div class="event-item"><strong>Kristine i Krogstad se pomire:</strong> Kristine predlaže Krogstadu da se spoje. Krogstad pristaje i želi povući pismo — ali Kristine ga zaustavlja. Kaže: Torvald mora znati istinu.</div>
+        <div class="event-item"><strong>Torvald čita pismo:</strong> Bijesan i ponižen, napada Noru. Ne pita "kako si to mogla" iz brige — nego "znaš li šta si mi učinila? Kako ćemo sačuvati reputaciju?" Demaskiranje.</div>
+        <div class="event-item"><strong>Krogstad poništava ucjenu:</strong> Stiže novo pismo — Krogstad vraća zadužnicu. Torvald odmah "oprašta" Nori i želi da sve bude kao nekad. Za njega problem je nestao.</div>
+        <div class="event-item"><strong>Norina spoznaja:</strong> Nora sjeda i razgovara s Torvaldom — možda prvi pravi razgovor u braku. Kaže mu da je cijeli život tretirao kao lutku i da nikada nije bila sretna — samo vesela.</div>
+        <div class="event-item"><strong>Zvuk vrata:</strong> Nora se oblaći, uzima kofer i odlazi. Vrata se zatvaraju. Drama je završena.</div>
+      </div>
+    </div>
+  </div>
+  <div class="info-box" style="margin-top:32px">
+    <div class="info-box-title">Čudo koje Nora traži</div>
+    <p class="prose" style="margin:0">Na kraju Nora govori o "čudu nad čudima" — da ona i Torvald postanu pravi partneri koji se zajedno mijenjaju. Ona ne želi ostati iz laži; želi ostati iz ljubavi. Ali shvata da to nije moguće. Njeno pitanje ostaje bez odgovora — i to je namjerno.</p>
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <span class="nav-pill" onclick="showSection('teme')" style="font-size:14px;padding:12px 28px">Sljedeće: Teme →</span>
+  </div>
+</section>
+
+<!-- TEME -->
+<section class="section" id="teme">
+  <div class="section-label">Poglavlje 04</div>
+  <h2 class="section-title">Teme i <em>ideje</em></h2>
+  <p class="prose">Klikni na svaku temu da vidiš detaljnu analizu. Ovo su ključne teme za esej i usmeni odgovor.</p>
+  <div class="theme-grid">
+    <div class="theme-box t1" onclick="toggleTheme(this)">
+      <div class="theme-number">01</div>
+      <div class="theme-title">Emancipacija žene</div>
+      <div class="theme-text">Nora odbija ulogu "lutke" i traži vlastiti identitet van braka.</div>
+      <div class="theme-expand"><p>Ovo je <strong style="color:var(--text)">centralna tema</strong> drame. Nora simbolizuje sve žene 19. vijeka zarobljene u ulozi dekoracije. Njen odlazak je politički čin — ona ne bježi, ona se bori za pravo da postoji kao osoba. Ibsen ne daje lak odgovor: Nora napušta i djecu, što je šokiralo publiku. Ali on time pita: zašto je majčinstvo obaveza samo za ženu?</p></div>
+      <div class="toggle-hint">▼ klikni za detalje</div>
+    </div>
+    <div class="theme-box t2" onclick="toggleTheme(this)">
+      <div class="theme-number">02</div>
+      <div class="theme-title">Laž i privid</div>
+      <div class="theme-text">Helmerov brak izvana izgleda savršeno, ali je izgrađen na lažima.</div>
+      <div class="theme-expand"><p>Gotovo svi likovi nešto kriju. Nora krije dug i krivotvorenje. Torvald krije svoju površnost. Rank krije ljubav i bolest. Krogstad krije prošlost. Ibsen sugeriše da je buržoasko društvo <strong style="color:var(--text)">fundamentalno sagrađeno na prividu</strong> — na onome što "izgledamo" pred drugima. Istina je opasna i razorno-oslobađajuća.</p></div>
+      <div class="toggle-hint">▼ klikni za detalje</div>
+    </div>
+    <div class="theme-box t3" onclick="toggleTheme(this)">
+      <div class="theme-number">03</div>
+      <div class="theme-title">Individualna sloboda</div>
+      <div class="theme-text">Pravo na vlastiti identitet nasuprot dužnostima prema porodici.</div>
+      <div class="theme-expand"><p>Nora na kraju kaže da ima <em>"obaveze prema sebi"</em> — to je revolucionarno za 1879. Tada se smatralo da je dužnost žene da se podredi. Ibsen postavlja filozofsko pitanje: <strong style="color:var(--text)">da li smo vlasništvo onih koje volimo, ili slobodne individue koje biraju ljubav?</strong> Nora bira slobodu — i plaća visoku cijenu.</p></div>
+      <div class="toggle-hint">▼ klikni za detalje</div>
+    </div>
+    <div class="theme-box t4" onclick="toggleTheme(this)">
+      <div class="theme-number">04</div>
+      <div class="theme-title">Moralnost i zakon</div>
+      <div class="theme-text">Je li Norin grijeh zaista grijeh? Pisani zakon vs. moralna pravda.</div>
+      <div class="theme-expand"><p>Nora je krivotvorila potpis — kriminalni čin. Ali učinila je to da spasi muža. Ibsen postavlja dilemu: <strong style="color:var(--text)">je li zakon koji kažnjava ženu za spasavanje muža pravičan zakon?</strong> Torvald misli da je zakon apsolutan. Nora razumije da postoji viša, ljudska moralnost iznad pisanog zakona.</p></div>
+      <div class="toggle-hint">▼ klikni za detalje</div>
+    </div>
+    <div class="theme-box t5" onclick="toggleTheme(this)">
+      <div class="theme-number">05</div>
+      <div class="theme-title">Brak i uloge</div>
+      <div class="theme-text">Šta zaista znači biti suprug i supruga?</div>
+      <div class="theme-expand"><p>Ibsen pokazuje tri tipa odnosa: Nora i Torvald (neravnopravni, lažni), Kristine i Krogstad (realni, ravnopravni), te Rank i Nora (jednosmjerna, neostvarena ljubav). Sugeriše da je <strong style="color:var(--text)">pravi brak moguć jedino između jednakih osoba</strong> — što u patrijarhalnom 19. vijeku gotovo nije moguće.</p></div>
+      <div class="toggle-hint">▼ klikni za detalje</div>
+    </div>
+    <div class="theme-box t6" onclick="toggleTheme(this)">
+      <div class="theme-number">06</div>
+      <div class="theme-title">Nasljeđe i determinizam</div>
+      <div class="theme-text">Grijesi roditelja koje djeca nose — fizički i moralni.</div>
+      <div class="theme-expand"><p>Dr. Rank umire od bolesti nasljeđene od oca. Torvald je formiran konzervativnim odgojem. Nora je odgajana da bude "ptičica." <strong style="color:var(--text)">Svi su zarobljenici nasljeđa</strong> — i Ibsen pita: može li se to prekinuti? Nora pokušava — odlaskom.</p></div>
+      <div class="toggle-hint">▼ klikni za detalje</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <span class="nav-pill" onclick="showSection('analiza')" style="font-size:14px;padding:12px 28px">Sljedeće: Analiza →</span>
+  </div>
+</section>
+
+<!-- ANALIZA -->
+<section class="section" id="analiza">
+  <div class="section-label">Poglavlje 05</div>
+  <h2 class="section-title">Dubinska <em>analiza</em></h2>
+  <p class="prose">Ovo poglavlje je za one koji žele više od prepričavanja radnje — citati, kontekst i argumenti koje možeš koristiti u eseju ili na usmenom odgovoru.</p>
+  <div class="analysis-block">
+    <div class="analysis-tag tag-gold">Završni dijalog · Čin III</div>
+    <div class="analysis-title">Razgovor koji mijenja sve</div>
+    <div class="highlight-quote">
+      "Nisam bila ništa do lutka u vašim rukama, baš kao što sam bila lutka u očevim rukama. A vi ste me zvali ptičicom, vjeveričicom — bila sam vam igračka."
+      <span>— Nora Helmer, Čin III</span>
+    </div>
+    <p class="prose">Ovaj citat je srž cijele drame. Nora artikuliše model svog cijelog života: prelaz iz očeve u mužu kontrolu, nikad vlastita egzistencija. Metafore "lutke" i "ptičice" koje je Torvald koristio s ljubavlju — ona ih sada vraća kao optužbu.</p>
+  </div>
+  <div class="analysis-block">
+    <div class="analysis-tag tag-red">Ključni momenat · Čin III</div>
+    <div class="analysis-title">Torvaldova reakcija na pismo — vrhunac drame</div>
+    <p class="prose">Nora je cijeli čin II maštala da će je suprug zaštititi. Umjesto toga, Torvald kaže:</p>
+    <div class="highlight-quote">
+      "Ti si uništila svu moju sreću. Nemaš religije, nemaš morala, nemaš osjećaja dužnosti."
+      <span>— Torvald Helmer, Čin III</span>
+    </div>
+    <p class="prose">Ibsen ovdje koristi ironiju: Torvald koji se predstavlja kao moralni stup kuće napada ženu koja ga je godinama tajno spasila. On ne vidi njen čin kao ljubav — nego kao prijetnju svom imidžu.</p>
+  </div>
+  <div class="analysis-block">
+    <div class="analysis-tag tag-green">Razvoj lika</div>
+    <div class="analysis-title">Transformacija Nore — tri faze</div>
+    <div class="two-col">
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px">Faza 1 — Lutka</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7">Na početku Nora je vesela, naivna, igra se s djecom. Djeluje bezbrižno — ali Ibsen pokazuje znakove: ona zna više nego što pokazuje, planira, laže vješto.</p>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--accent2);text-transform:uppercase;margin-bottom:8px">Faza 2 — Buđenje</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7">Ucjena razara Norinu iluziju sigurnosti. Shvata da se ne može osloniti na Torvaldovu zaštitu. Razmišlja o samoubistvu — još uvijek definisana tuđim potrebama.</p>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--green2);text-transform:uppercase;margin-bottom:8px">Faza 3 — Oslobođenje</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7">Torvaldova reakcija je okidač. Nora sjeda, misli, govori mirno i jasno. Ne plače. Odlazi. Postala je osoba, a ne lutka.</p>
+      </div>
+      <div>
+        <div style="font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Ibsenov cilj</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7">Ibsen ne prikazuje Norinu transformaciju kao pobunu — već kao <strong style="color:var(--text)">prirodno sazrijevanje osobe koja je konačno vidjela stvarnost</strong>. Ona ne mrzi Torvaldija — razočarala se.</p>
+      </div>
+    </div>
+  </div>
+  <div class="analysis-block">
+    <div class="analysis-tag tag-purple">Dramaturška analiza</div>
+    <div class="analysis-title">Tehnika i struktura</div>
+    <p class="prose">Ibsen gradi dramu kao zatezanje opruge. Pismo u sandučetu funkcioniše kao <strong>vremenski mjeračna bomba</strong> — mi i Nora znamo da je tu, a Torvald ne. Ovo stvara dramatsku ironiju kroz cijeli čin II i III.</p>
+    <p class="prose">Božić kao pozadina nije slučajan: Ibsen kontrastira <em>privid porodičnog sklada</em> sa <em>stvarnim raspadom</em> koji se odvija iza scene. Dekoracije, darovi, ples — sve su fasade koje se ruše.</p>
+    <div class="highlight-quote">
+      "Idem sada. Sigurno su mi dobra vrata."
+      <span>— Nora, posljednje riječi · Zvuk zaključavanja vrata</span>
+    </div>
+    <p class="prose">Zadnji zvuk drame — lupanje vrata — Ibsen je opisao kao "zvuk koji je odjeknuo kroz cijelu Evropu." Nije eksplozija, nije plač. <strong>Tišina iza zatvorenih vrata</strong> je najmoćniji moment.</p>
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <span class="nav-pill" onclick="showSection('simboli')" style="font-size:14px;padding:12px 28px">Sljedeće: Simboli →</span>
+  </div>
+</section>
+
+<!-- SIMBOLI -->
+<section class="section" id="simboli">
+  <div class="section-label">Poglavlje 06</div>
+  <h2 class="section-title">Simbolika i <em>motivi</em></h2>
+  <p class="prose">Ibsen je majstor simbolike. Svaki detalj u drami nosi značenje. Evo ključnih simbola koje trebaš znati.</p>
+  <div class="symbol-row">
+    <div class="symbol-card">
+      <div class="symbol-icon">🪆</div>
+      <div class="symbol-name">Lutka (Dukkehjem)</div>
+      <div class="symbol-meaning">Naslov "Kuća lutkica" govori sve. Nora je lutka — bez vlastite volje, pokretana tuđim rukama. "Kuća lutaka" je i sam dom Helmerovih: lijep, uređen, bezduhovit.</div>
+    </div>
+    <div class="symbol-card">
+      <div class="symbol-icon">🚪</div>
+      <div class="symbol-name">Zatvorena vrata</div>
+      <div class="symbol-meaning">Zvuk vrata na kraju jedan je od najslavnijih dramaturških momenata. Vrata su granica između starog i novog života, zavisnosti i slobode, laži i istine.</div>
+    </div>
+    <div class="symbol-card">
+      <div class="symbol-icon">💃</div>
+      <div class="symbol-name">Tarantela</div>
+      <div class="symbol-meaning">Mediteranski ples koji je navodno bio jedini lijek za ujed otrovne tarantule. Nora pleše divlje i očajnički — Krogstad je njen "otrov." Ples je i njen posljednji performans kao "lutke."</div>
+    </div>
+    <div class="symbol-card">
+      <div class="symbol-icon">🎄</div>
+      <div class="symbol-name">Božić</div>
+      <div class="symbol-meaning">Božić simbolizuje savršenu porodičnu sliku. Ibsen postiže maksimalnu ironiju: baš u trenutku kada bi sve trebalo biti idealno, sve se raspada.</div>
+    </div>
+    <div class="symbol-card">
+      <div class="symbol-icon">📮</div>
+      <div class="symbol-name">Pismo u sandučetu</div>
+      <div class="symbol-meaning">Fizički simbol neizbježne istine. Nora zna da je tu, Torvald ne. Istina se ne može zauvijek sakriti — ona čeka u sandučetu dok ju neko ne pogleda u oči.</div>
+    </div>
+    <div class="symbol-card">
+      <div class="symbol-icon">🃏</div>
+      <div class="symbol-name">Rankova crna kartica</div>
+      <div class="symbol-meaning">Rank šalje karticu s crnim križem kao znak da odlazi umrijeti. Poetska gesta u kontrastu s Torvaldom koji nikad ne bi bio tako suptilan. Odlazi dostojanstveno — kao i Nora.</div>
+    </div>
+    <div class="symbol-card">
+      <div class="symbol-icon">🐦</div>
+      <div class="symbol-name">Ptičica / Vjeveričica</div>
+      <div class="symbol-meaning">Torvaldovi nadimci za Noru. Oboje su mali životinjice u kavezu ili na uzici. Ibsen time govori: Torvaldova ljubav je ljubav prema kućnom ljubimcu, ne prema osobi.</div>
+    </div>
+    <div class="symbol-card">
+      <div class="symbol-icon">🏦</div>
+      <div class="symbol-name">Banka / Novac</div>
+      <div class="symbol-meaning">Torvaldovo napredovanje simbolizuje društvenu moć. Novac nije samo ekonomski — on je simbol zavisnosti i moći. Ko kontroliše novac, kontroliše i ljude.</div>
+    </div>
+  </div>
+  <div class="info-box" style="margin-top:24px">
+    <div class="info-box-title">Motiv samospoznaje</div>
+    <p class="prose" style="margin:0">Čitava drama je putovanje prema <strong>istini o sebi</strong>. Nora kaže na kraju: <em>"Moram sama misliti o tim stvarima i pokušati razumjeti ih."</em> Ovo je suštinski modernistički momenat: individualna spoznaja kao jedini put ka slobodi.</p>
+  </div>
+  <div style="text-align:center;margin-top:40px">
+    <span class="nav-pill" onclick="showSection('kviz')" style="font-size:14px;padding:12px 28px">Sljedeće: Testiraj znanje →</span>
+  </div>
+</section>
+
+<!-- KVIZ -->
+<section class="section" id="kviz">
+  <div class="section-label">Poglavlje 07</div>
+  <h2 class="section-title">Testiraj <em>znanje</em></h2>
+  <p class="prose">Provjeri jesi li spreman/a za lektiru. Klikni na odgovor koji smatraš tačnim.</p>
+  <div id="quizContainer"></div>
+  <div id="quizResults" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;margin-top:24px">
+    <div style="font-family:'Playfair Display',serif;font-size:42px;color:var(--gold);margin-bottom:8px" id="finalScore"></div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--cream);margin-bottom:12px" id="finalMsg"></div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:24px" id="finalAdvice"></div>
+    <span class="nav-pill" onclick="resetQuiz()" style="font-size:14px;padding:12px 28px;cursor:pointer">Ponovi kviz</span>
+  </div>
+</section>
+
+<script>
+const sections = ['kontekst','likovi','radnja','teme','analiza','simboli','kviz'];
+let currentSection = null;
+
+function showSection(id) {
+  document.getElementById('heroSection').style.display = 'none';
+  sections.forEach(s => { const el = document.getElementById(s); if(el) el.classList.remove('active'); });
+  const target = document.getElementById(id);
+  if(target) { target.classList.add('active'); currentSection = id; window.scrollTo({top:0,behavior:'smooth'}); }
+  document.querySelectorAll('.sticky-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sticky-btn[onclick="showSection('${id}')"]`);
+  if(btn) btn.classList.add('active');
+  document.getElementById('stickyNav').classList.add('visible');
+}
+
+window.addEventListener('scroll', () => {
+  const hero = document.getElementById('heroSection');
+  if(hero && hero.style.display !== 'none') {
+    const rect = hero.getBoundingClientRect();
+    if(rect.bottom < 100) document.getElementById('stickyNav').classList.add('visible');
+    else document.getElementById('stickyNav').classList.remove('visible');
+  }
+  const scrollTop = window.scrollY;
+  const docHeight = document.body.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('progressBar').style.width = progress + '%';
+});
+
+function showChar(e, id) {
+  document.querySelectorAll('.char-profile').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.char-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('char-' + id)?.classList.add('active');
+  e.target.classList.add('active');
+}
+
+function toggleTheme(el) { el.classList.toggle('open'); }
+
+const questions = [
+  { q: "Zašto je Nora uzela tajni zajam od Krogstada?", options: ["Da kupi luksuznu odjeću","Da spasi bolesnoga muža koji je trebao putovati na toplije","Da pomogne prijateljici Kristine","Da plati dječje školovanje"], correct: 1, exp: "Tačno! Torvald je bio teško bolestan i trebao je putovati u topliju klimu (Italiju). Nora je tajno uzela zajam — i falsificirala potpis svog oca da bi dobila garanciju." },
+  { q: "Čiji potpis je Nora falsificirala?", options: ["Torvalden potpis","Potpis svog mrtvorođenog oca","Rankovu medicinsku potvrdu","Bankarski dokument"], correct: 1, exp: "Tačno! Nora je falsificirala potpis svog oca koji je bio bolestan i umro isti dan kada je potpis trebao biti napisan. To je krivično djelo koje Krogstad koristi kao ucjenu." },
+  { q: "Zašto Torvald želi otpustiti Krogstada?", options: ["Jer je Krogstad loš radnik","Jer Krogstad zna za Norin zajam","Jer ga Krogstad oslovljava imenom, što narušava Torvaldov autoritet","Jer Krogstad krađi od banke"], correct: 2, exp: "Tačno! Torvald želi da se distancira od Krogstada jer mu smeta što ga Krogstad naziva imenom iz djetinjstva — sitna ego-borba koja ima katastrofalne posljedice." },
+  { q: "Šta simbolizuje Norin ples tarantele u činu II?", options: ["Radost zbog Božića","Njenu ljubav prema plesu","Očaj i borbu za preživljavanje — kao ples od ujeda otrovne tarantule","Pokušaj da impresionira goste"], correct: 2, exp: "Tačno! Tarantela je ples koji je navodno bio jedini lijek za ujed otrovne tarantule. Nora pleše divlje i očajnički — ples je i njen posljednji performans kao 'lutke.'" },
+  { q: "Koja je Torvaldova prva reakcija kada pročita Krogstadovo pismo?", options: ["Zagrli Noru i kaže da će je zaštititi","Brine se isključivo za vlastitu reputaciju i napada Noru","Odmah ode policiji","Plače i moli Noru da mu oprosti"], correct: 1, exp: "Tačno! Torvald je bijesan i govori da je Nora uništila njegovu sreću i reputaciju. Ne pita kako da zaštiti ženu — brine samo za sebe. Ovo je trenutak kada Nora konačno vidi pravo lice braka." },
+  { q: "Zašto Gospa Linde ne spriječava Krogstada da povuče pismo?", options: ["Ne zna za pismo","Želi da Nora bude kažnjena","Smatra da Torvald mora znati istinu","Mrzi Noru"], correct: 2, exp: "Tačno! Kristine vjeruje da je istina neophodna za zdrav odnos. Kaže Krogstadu neka ne povlači pismo — Helmerovi moraju suočiti se s istinom. Ova odluka pokreće cijeli rasplet." },
+  { q: "Što simbolizuje Dr. Rankova bolest?", options: ["Slučajnu nesreću","Moralno truljenje koje se nasljeđuje s generacije na generaciju","Kaznu za Norin grijeh","Upozorenje Torvaldiju"], correct: 1, exp: "Tačno! Rank je naslijedio sifilis od razuzdanog oca. Ibsen ga koristi kao simbol nasljeđenih moralnih bolesti — i fizičkih i društvenih." },
+  { q: "Šta Nora podrazumijeva pod 'čudom nad čudima'?", options: ["Da Krogstad odustane od ucjene","Da Torvald postane pravi partner — ravnopravni brak","Da se vrate u Italiju","Da dobiju još djece"], correct: 1, exp: "Tačno! Nora govori o tome da ona i Torvald postanu zaista ravnopravni partneri koji se zajedno mijenjaju. Ne želi ostati iz laži — želi istinski brak. Torvald ne zna odgovoriti." },
+  { q: "Na koji period godine se odvija radnja drame?", options: ["Ljeto","Uskrs","Božić","Proljeće"], correct: 2, exp: "Tačno! Radnja se odvija tokom Božića, u tri dana. Ibsen koristi Božić — simbol savršene porodične sreće — kao ironičnu pozadinu za raspad braka." },
+  { q: "Šta simbolizuje zvuk zatvorenih vrata na kraju?", options: ["Nora se zaključala u sobi","Granica između starog i novog života — sloboda nasuprot laži","Torvald zaključava vrata od bijesa","Krogstad dolazi ponovo"], correct: 1, exp: "Tačno! Ibsen je opisao zvuk vrata kao 'zvuk koji je odjeknuo kroz cijelu Evropu.' Tišina iza zatvorenih vrata je najmoćniji završetak — Nora odlazi dostojanstveno." }
+];
+
+let score = 0, answered = 0;
+let answeredQ = new Array(questions.length).fill(false);
+
+function initQuiz() {
+  const c = document.getElementById('quizContainer');
+  c.innerHTML = '';
+  questions.forEach((q, i) => {
+    const d = document.createElement('div');
+    d.className = 'quiz-q';
+    d.id = 'question-' + i;
+    d.innerHTML = `<div class="quiz-question">${i+1}. ${q.q}</div><div class="quiz-options">${q.options.map((o,j) => `<button class="quiz-option" onclick="answerQ(${i},${j})">${o}</button>`).join('')}</div><div class="quiz-feedback" id="feedback-${i}"></div>`;
+    c.appendChild(d);
+  });
+  updateScore();
+}
+
+function answerQ(qi, ai) {
+  if(answeredQ[qi]) return;
+  answeredQ[qi] = true; answered++;
+  const q = questions[qi];
+  const cont = document.getElementById('question-' + qi);
+  const opts = cont.querySelectorAll('.quiz-option');
+  const fb = document.getElementById('feedback-' + qi);
+  opts.forEach((o,j) => { o.disabled = true; if(j===q.correct) o.classList.add('correct'); else if(j===ai && ai!==q.correct) o.classList.add('wrong'); });
+  if(ai === q.correct) { score++; fb.className = 'quiz-feedback correct show'; fb.textContent = '✓ ' + q.exp; }
+  else { fb.className = 'quiz-feedback wrong show'; fb.textContent = '✗ Netačno. ' + q.exp; }
+  updateScore();
+  if(answered === questions.length) setTimeout(showResults, 600);
+}
+
+function updateScore() { document.getElementById('scoreDisplay').textContent = score + ' / ' + answered; }
+
+function showResults() {
+  document.getElementById('quizResults').style.display = 'block';
+  const pct = Math.round((score/questions.length)*100);
+  document.getElementById('finalScore').textContent = score + ' / ' + questions.length;
+  let msg, advice;
+  if(pct >= 90) { msg = "Odlično! Spreman/a si za lektiru."; advice = "Znaš sve ključne detalje. Bravo!"; }
+  else if(pct >= 70) { msg = "Dobro! Još malo ponavljanja."; advice = "Prođi ponovo kroz poglavlja gdje si pogriješio/la. Fokusiraj se na teme i analizu."; }
+  else if(pct >= 50) { msg = "Srednje. Treba još rada."; advice = "Preporučujem da pročitaš poglavlja Radnja i Analiza ponovo."; }
+  else { msg = "Treba dosta rada."; advice = "Prođi kroz vodič od početka, posebno poglavlja Likovi, Radnja i Teme."; }
+  document.getElementById('finalMsg').textContent = msg;
+  document.getElementById('finalAdvice').textContent = advice;
+  document.getElementById('quizResults').scrollIntoView({behavior:'smooth'});
+}
+
+function resetQuiz() {
+  score = 0; answered = 0; answeredQ = new Array(questions.length).fill(false);
+  document.getElementById('quizResults').style.display = 'none';
+  initQuiz(); updateScore();
+}
+
+initQuiz();
+</script>
+</body>
+</html>
